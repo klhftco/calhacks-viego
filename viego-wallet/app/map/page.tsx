@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { MapPin, Search, Coffee, ShoppingBag, Utensils, Book, Bus, Heart, CheckCircle, X } from "lucide-react";
+import SpendingAlert from '@/components/SpendingAlert';
 
 interface Merchant {
   id: number;
@@ -18,6 +19,7 @@ interface Merchant {
 export default function MapPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedMerchant, setSelectedMerchant] = useState<Merchant | null>(null);
 
   const categories = [
     { id: "all", label: "All", icon: MapPin },
@@ -261,12 +263,27 @@ export default function MapPage() {
                       ))}
                     </div>
                   </div>
+                  
+                  {/* Offers & spending check button */}
+                  <div className="mt-4">
+                    <button
+                      onClick={() => setSelectedMerchant(merchant)}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700"
+                    >
+                      Check offers & limits
+                    </button>
+                  </div>
                 </div>
               );
             })}
           </div>
         )}
       </div>
+      {selectedMerchant && (
+        <div className="mt-6">
+          <SpendingAlert merchant={selectedMerchant} onClose={() => setSelectedMerchant(null)} />
+        </div>
+      )}
     </div>
   );
 }
