@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { DollarSign, TrendingUp, TrendingDown, Bell, Calendar, CreditCard, ShoppingBag, Coffee, Bus, Home } from "lucide-react";
+import DonutChart from "@/components/DonutChart";
 
 interface SpendingLimit {
   id: number;
@@ -31,10 +32,10 @@ interface AutoPayment {
 
 export default function BudgetPage() {
   const [spendingLimits] = useState<SpendingLimit[]>([
-    { id: 1, category: "Food & Dining", icon: Coffee, limit: 200, spent: 145, color: "bg-orange-500" },
-    { id: 2, category: "Shopping", icon: ShoppingBag, limit: 150, spent: 89, color: "bg-pink-500" },
+    { id: 1, category: "Food & Dining", icon: Coffee, limit: 200, spent: 145, color: "bg-green-500" },
+    { id: 2, category: "Shopping", icon: ShoppingBag, limit: 150, spent: 89, color: "bg-teal-500" },
     { id: 3, category: "Transportation", icon: Bus, limit: 100, spent: 42, color: "bg-blue-500" },
-    { id: 4, category: "Housing", icon: Home, limit: 800, spent: 800, color: "bg-green-500" },
+    { id: 4, category: "Housing", icon: Home, limit: 800, spent: 800, color: "bg-emerald-500" },
   ]);
 
   const [transactions] = useState<Transaction[]>([
@@ -58,9 +59,31 @@ export default function BudgetPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">Budget & Spending</h1>
-        <p className="text-gray-600">Track your spending, set limits, and automate payments</p>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-gray-900">Budget</h1>
+        <p className="text-gray-600 text-sm">Track spending, limits, and bills</p>
+      </div>
+
+      {/* Donut Finance Visual (centered and larger) */}
+      <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-gray-100 mb-8">
+        <div className="flex flex-col items-center">
+          <DonutChart
+            data={spendingLimits.map((s) => ({ label: s.category, value: s.spent, color: s.color.replace('bg-', 'text-') }))}
+            size={280}
+            stroke={26}
+            centerLabel={`$${totalSpent}`}
+            centerSubLabel={`of $${totalIncome}`}
+          />
+          <div className="mt-6 grid grid-cols-2 gap-4 w-full max-w-sm text-sm">
+            {spendingLimits.map((s) => (
+              <div key={s.id} className="flex items-center gap-2">
+                <span className={`${s.color} inline-block w-3 h-3 rounded-full`} />
+                <span className="text-gray-700 font-medium truncate">{s.category}</span>
+                <span className="ml-auto text-gray-900 font-semibold">${s.spent}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Budget Overview */}
@@ -74,10 +97,10 @@ export default function BudgetPage() {
           <p className="text-sm text-green-600 mt-2">+$500 this month</p>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-red-200">
+        <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-blue-200">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-lg font-semibold text-gray-700">Total Spent</h3>
-            <TrendingDown className="text-red-500" size={24} />
+            <TrendingDown className="text-blue-600" size={24} />
           </div>
           <p className="text-3xl font-bold text-gray-900">${totalSpent}</p>
           <p className="text-sm text-gray-500 mt-2">{((totalSpent/totalIncome)*100).toFixed(1)}% of income</p>
@@ -102,15 +125,15 @@ export default function BudgetPage() {
       </div>
 
       {/* Positive Nudge Banner */}
-      <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-6 mb-8 text-white shadow-lg">
+      <div className="bg-gradient-to-r from-blue-500 to-green-500 rounded-2xl p-6 mb-8 text-white shadow-lg">
         <div className="flex items-start gap-4">
           <div className="bg-white/20 rounded-full p-3 mt-1">
             <Bell size={24} />
           </div>
           <div>
-            <h3 className="text-xl font-bold mb-2">You're doing great! 🎉</h3>
+            <h3 className="text-xl font-bold mb-2">You&#39;re doing great! 🎉</h3>
             <p className="text-white/90 text-lg">
-              You're 85% to your savings goal! Skip that $12 delivery fee and you'll hit it by Friday.
+              You&#39;re 85% to your savings goal! Skip that $12 delivery fee and you&#39;ll hit it by Friday.
               Your monsters are cheering you on! 🦖
             </p>
           </div>
@@ -148,19 +171,19 @@ export default function BudgetPage() {
                 <div className="bg-gray-200 rounded-full h-3 overflow-hidden mb-2">
                   <div
                     className={`h-full rounded-full transition-all ${
-                      isNearLimit ? 'bg-red-500' : limit.color
+                      isNearLimit ? 'bg-blue-600' : limit.color
                     }`}
                     style={{ width: `${Math.min(percentage, 100)}%` }}
                   />
                 </div>
 
                 {isNearLimit && percentage < 100 && (
-                  <p className="text-sm text-orange-600 font-semibold">
+                  <p className="text-sm text-blue-700 font-semibold">
                     ⚠️ Approaching limit - ${limit.limit - limit.spent} remaining
                   </p>
                 )}
                 {percentage >= 100 && (
-                  <p className="text-sm text-red-600 font-semibold">
+                  <p className="text-sm text-blue-800 font-semibold">
                     🚫 Limit reached for this week
                   </p>
                 )}

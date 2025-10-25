@@ -81,7 +81,7 @@ export default function FriendsPage() {
       action: "hatched a new monster! 🦕",
       timestamp: "2 hours ago",
       icon: Trophy,
-      color: "text-yellow-500",
+      color: "text-green-600",
     },
     {
       id: 2,
@@ -89,7 +89,7 @@ export default function FriendsPage() {
       action: "reached a 30-day savings streak! 🔥",
       timestamp: "5 hours ago",
       icon: Flame,
-      color: "text-orange-500",
+      color: "text-teal-600",
     },
     {
       id: 3,
@@ -97,7 +97,7 @@ export default function FriendsPage() {
       action: "unlocked the Budget Master badge",
       timestamp: "1 day ago",
       icon: Award,
-      color: "text-purple-500",
+      color: "text-blue-600",
     },
     {
       id: 4,
@@ -105,7 +105,7 @@ export default function FriendsPage() {
       action: "saved $50 this week",
       timestamp: "2 days ago",
       icon: TrendingUp,
-      color: "text-green-500",
+      color: "text-emerald-600",
     },
   ]);
 
@@ -120,129 +120,102 @@ export default function FriendsPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">Friends & Community</h1>
-        <p className="text-gray-600">Connect with friends, share your journey, and climb the leaderboard</p>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-gray-900">Friends</h1>
+        <p className="text-gray-600 text-sm">Your campus crew</p>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-gradient-to-br from-blue-400 to-indigo-500 rounded-2xl p-6 shadow-lg text-white">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold">Friends</h3>
-            <Users size={24} />
-          </div>
-          <p className="text-4xl font-bold">{friends.length}</p>
-          <p className="text-white/90 text-sm mt-2">{friends.filter(f => f.isOnline).length} online now</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl p-6 shadow-lg text-white">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold">Your Rank</h3>
-            <Trophy size={24} />
-          </div>
-          <p className="text-4xl font-bold">#3</p>
-          <p className="text-white/90 text-sm mt-2">in UC Berkeley group</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-purple-400 to-pink-500 rounded-2xl p-6 shadow-lg text-white">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold">Group XP</h3>
-            <Flame size={24} />
-          </div>
-          <p className="text-4xl font-bold">850</p>
-          <p className="text-white/90 text-sm mt-2">Keep climbing!</p>
-        </div>
-      </div>
-
-      {/* Group Activity Feed */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <MessageCircle className="text-blue-500" />
-            Group Activity
-          </h2>
-          <span className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
-            UC Berkeley Group
-          </span>
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 overflow-hidden">
-          {groupActivities.map((activity, index) => {
-            const Icon = activity.icon;
-            return (
-              <div
-                key={activity.id}
-                className={`p-6 flex items-center gap-4 hover:bg-gray-50 transition-colors ${
-                  index !== groupActivities.length - 1 ? 'border-b border-gray-100' : ''
-                }`}
-              >
-                <div className={`${activity.color}`}>
-                  <Icon size={32} />
-                </div>
-                <div className="flex-1">
-                  <p className="text-gray-900">
-                    <span className="font-bold">{activity.user}</span> {activity.action}
-                  </p>
-                  <p className="text-sm text-gray-500 mt-1">{activity.timestamp}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Leaderboard */}
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <Trophy className="text-yellow-500" />
-          Leaderboard
-        </h2>
-
-        <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 overflow-hidden">
-          {leaderboard.map((entry, index) => (
+      {/* Floating bubbles for friends (clustered without overlap using concentric rings) */}
+      <div className="relative rounded-2xl p-8 shadow-lg border-2 border-blue-100 mb-8 min-h-[320px] overflow-hidden bg-gradient-to-br from-blue-50 to-green-50">
+        {friends.map((f, idx) => {
+          const ringCaps = [6, 12, 18];
+          const ringRadii = [90, 140, 180];
+          let ring = 0;
+          let pos = idx;
+          while (ring < ringCaps.length && pos >= ringCaps[ring]) {
+            pos -= ringCaps[ring];
+            ring++;
+          }
+          const cap = ringCaps[Math.min(ring, ringCaps.length - 1)];
+          const radius = ringRadii[Math.min(ring, ringRadii.length - 1)];
+          const step = (2 * Math.PI) / cap;
+          const angle = -Math.PI / 2 + pos * step; // start at top
+          const x = Math.cos(angle) * radius;
+          const y = Math.sin(angle) * radius;
+          const size = idx % 4 === 0 ? 64 : 56;
+          return (
             <div
-              key={entry.rank}
-              className={`p-6 flex items-center justify-between transition-colors ${
-                entry.isCurrentUser
-                  ? 'bg-blue-50 border-2 border-blue-300'
-                  : 'hover:bg-gray-50'
-              } ${index !== leaderboard.length - 1 ? 'border-b border-gray-100' : ''}`}
+              key={f.id}
+              className={`absolute rounded-full flex items-center justify-center text-2xl shadow-md ring-2 ${f.isOnline ? 'ring-green-300 bg-green-100' : 'ring-blue-200 bg-blue-100'}`}
+              style={{
+                width: size, height: size,
+                left: '50%', top: '50%',
+                transform: `translate(-50%, -50%) translate(${x}px, ${y}px)`,
+                animation: `float ${6 + (idx % 4)}s ease-in-out ${(idx % 5) * 0.6}s infinite alternate`,
+              }}
+              title={`${f.name} • ${f.university}`}
             >
-              <div className="flex items-center gap-4">
-                {/* Rank Badge */}
-                <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl ${
-                    entry.rank === 1
-                      ? 'bg-yellow-400 text-yellow-900'
-                      : entry.rank === 2
-                      ? 'bg-gray-300 text-gray-700'
-                      : entry.rank === 3
-                      ? 'bg-orange-400 text-orange-900'
-                      : 'bg-gray-100 text-gray-600'
-                  }`}
-                >
-                  {entry.rank}
-                </div>
-
-                <div>
-                  <p className={`font-bold text-lg ${entry.isCurrentUser ? 'text-blue-600' : 'text-gray-900'}`}>
-                    {entry.name}
-                    {entry.isCurrentUser && (
-                      <span className="ml-2 text-sm bg-blue-500 text-white px-2 py-1 rounded-full">
-                        You
-                      </span>
-                    )}
-                  </p>
-                </div>
-              </div>
-
-              <div className="text-right">
-                <p className="text-2xl font-bold text-gray-900">{entry.score}</p>
-                <p className="text-sm text-gray-500">XP</p>
-              </div>
+              {f.avatar}
             </div>
-          ))}
+          );
+        })}
+        <style jsx>{`
+          @keyframes float { from { transform: translate(-50%, -50%) translate(0px, 0px); } to { transform: translate(-50%, -50%) translate(0px, -14px); } }
+        `}</style>
+      </div>
+
+      {/* Below bubbles: two columns — left activity, right rank/XP */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Left: Group Activity (md: span 2) */}
+        <div className="md:col-span-2">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <MessageCircle className="text-blue-500" />
+              Group Activity
+            </h2>
+            <span className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">UC Berkeley Group</span>
+          </div>
+          <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 overflow-hidden">
+            {groupActivities.map((activity, index) => {
+              const Icon = activity.icon;
+              return (
+                <div
+                  key={activity.id}
+                  className={`p-6 flex items-center gap-4 hover:bg-gray-50 transition-colors ${index !== groupActivities.length - 1 ? 'border-b border-gray-100' : ''}`}
+                >
+                  <div className={`${activity.color}`}>
+                    <Icon size={28} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-gray-900"><span className="font-bold">{activity.user}</span> {activity.action}</p>
+                    <p className="text-sm text-gray-500 mt-1">{activity.timestamp}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Right: Rank and Group XP (aligned) */}
+        <div>
+          <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-blue-100">
+            <div className="text-center mb-4">
+              <div className="inline-flex items-center gap-2 text-blue-700 font-semibold">
+                <Trophy size={20} />
+                <span>Your Rank</span>
+              </div>
+              <div className="text-4xl font-bold text-gray-900 mt-1">#3</div>
+              <div className="text-sm text-gray-500">in UC Berkeley group</div>
+            </div>
+            <div className="border-t border-gray-100 pt-4 text-center">
+              <div className="inline-flex items-center gap-2 text-green-700 font-semibold">
+                <Flame size={20} />
+                <span>Group XP</span>
+              </div>
+              <div className="text-4xl font-bold text-gray-900 mt-1">850</div>
+              <div className="text-sm text-gray-500">Keep climbing!</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -287,9 +260,9 @@ export default function FriendsPage() {
 
               {/* Friend Stats */}
               <div className="grid grid-cols-3 gap-3 mb-4">
-                <div className="bg-orange-50 rounded-xl p-3 text-center">
+                <div className="bg-blue-50 rounded-xl p-3 text-center">
                   <div className="flex items-center justify-center gap-1 mb-1">
-                    <Flame className="text-orange-500" size={16} />
+                    <Flame className="text-blue-600" size={16} />
                     <span className="text-xl font-bold text-gray-900">{friend.streak}</span>
                   </div>
                   <p className="text-xs text-gray-600">Day Streak</p>
@@ -322,7 +295,7 @@ export default function FriendsPage() {
       </div>
 
       {/* Group Info Card */}
-      <div className="mt-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl p-8 text-white shadow-lg">
+      <div className="mt-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-2xl p-8 text-white shadow-lg">
         <h2 className="text-2xl font-bold mb-4">About University Groups</h2>
         <p className="text-white/90 mb-4">
           Join your university group to see how other students are managing their finances,

@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { fetchOffersForMerchant, getSpendingStatus } from '@/hooks/useMerchantOffers';
+import { fetchOffersForMerchant, getSpendingStatus, checkoutTransaction } from '@/hooks/useMerchantOffers';
 
 interface Props {
-  merchant: { id: number | string; name: string };
+  merchant: { id: number | string; name: string; contentId?: string };
   onClose?: () => void;
 }
 
@@ -12,6 +12,9 @@ export default function SpendingAlert({ merchant, onClose }: Props) {
   const [offers, setOffers] = useState<any[] | null>(null);
   const [spending, setSpending] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [amount, setAmount] = useState<string>("");
+  const [quote, setQuote] = useState<any | null>(null);
+  const [quoting, setQuoting] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -19,7 +22,7 @@ export default function SpendingAlert({ merchant, onClose }: Props) {
       setLoading(true);
       try {
         const [o, s] = await Promise.all([
-          fetchOffersForMerchant(merchant.id),
+          fetchOffersForMerchant(merchant.id, merchant.contentId),
           getSpendingStatus(),
         ]);
         if (!mounted) return;
@@ -83,6 +86,69 @@ export default function SpendingAlert({ merchant, onClose }: Props) {
                   </li>
                 ))}
               </ul>
+            )}
+          </div>
+
+          {/* Pre-purchase quote */}
+          <div className="mt-4 p-3 border rounded-md">
+            <h4 className="font-semibold">Simulate a purchase</h4>
+            <div className="flex items-center gap-2 mt-2">
+              <span>$</span>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="border rounded px-2 py-1 w-32"
+                placeholder="Amount"
+              />
+              <button
+                disabled={!amount || quoting}
+                onClick={async () => {
+                  try {
+                    setQuoting(true);
+                    const result = await checkoutTransaction({ merchantId: merchant.id, amount: parseFloat(amount), commit: false });
+                    setQuote(result);
+                  } finally {
+                    setQuoting(false);
+                  }
+                }}
+                className={`px-3 py-1 rounded text-white ${quoting ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'}`}
+              >
+                {quoting ? 'Checking…' : 'Check savings'}
+              </button>
+            </div>
+
+            {quote && (
+              <div className="mt-3 text-sm">
+                {quote.nearingLimit && (
+                  <p className="text-red-600 font-semibold mb-1">Warning: You’re nearing your monthly spending limit.</p>
+                )}
+                <p>Best offer: <span className="font-semibold">{quote.appliedOffer?.title || quote.reason || 'None'}</span></p>
+                <p>Savings: <span className="font-semibold">${Number(quote.savings || 0).toFixed(2)}</span></p>
+                <p>Final amount: <span className="font-semibold">${Number(quote.finalAmount || 0).toFixed(2)}</span></p>
+                <div className="mt-2">
+                  <button
+                    disabled={quoting}
+                    onClick={async () => {
+                      try {
+                        setQuoting(true);
+                        const result = await checkoutTransaction({ merchantId: merchant.id, amount: parseFloat(amount), commit: true });
+                        setQuote(result);
+                        // refresh spending summary after committing
+                        const s = await getSpendingStatus();
+                        setSpending(s);
+                      } finally {
+                        setQuoting(false);
+                      }
+                    }}
+                    className={`px-3 py-1 rounded text-white ${quoting ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'}`}
+                  >
+                    Apply and purchase (demo)
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         </div>

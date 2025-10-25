@@ -14,6 +14,7 @@ interface Merchant {
   icon: any;
   color: string;
   paymentMethods: string[];
+  contentId?: string;
 }
 
 export default function MapPage() {
@@ -39,8 +40,9 @@ export default function MapPage() {
       address: "123 University Ave",
       acceptsViego: true,
       icon: Coffee,
-      color: "bg-orange-500",
+      color: "bg-teal-600",
       paymentMethods: ["Visa", "Mastercard", "Viego Card"],
+      contentId: "content-abc",
     },
     {
       id: 2,
@@ -50,7 +52,7 @@ export default function MapPage() {
       address: "45 Campus Dr",
       acceptsViego: true,
       icon: Book,
-      color: "bg-blue-500",
+      color: "bg-blue-600",
       paymentMethods: ["Visa", "Mastercard", "Viego Card", "Apple Pay"],
     },
     {
@@ -61,8 +63,9 @@ export default function MapPage() {
       address: "789 College Blvd",
       acceptsViego: true,
       icon: Utensils,
-      color: "bg-red-500",
+      color: "bg-emerald-600",
       paymentMethods: ["Visa", "Mastercard", "Viego Card"],
+      contentId: "content-free-delivery",
     },
     {
       id: 4,
@@ -72,7 +75,7 @@ export default function MapPage() {
       address: "1 Transit Center",
       acceptsViego: true,
       icon: Bus,
-      color: "bg-green-500",
+      color: "bg-green-600",
       paymentMethods: ["Viego Card", "Transit Pass"],
     },
     {
@@ -83,7 +86,7 @@ export default function MapPage() {
       address: "234 Downtown St",
       acceptsViego: false,
       icon: ShoppingBag,
-      color: "bg-pink-500",
+      color: "bg-sky-600",
       paymentMethods: ["Visa", "Mastercard"],
     },
     {
@@ -94,7 +97,7 @@ export default function MapPage() {
       address: "567 Health Way",
       acceptsViego: true,
       icon: Heart,
-      color: "bg-green-500",
+      color: "bg-teal-500",
       paymentMethods: ["Visa", "Mastercard", "Viego Card", "Apple Pay"],
     },
   ]);
