@@ -10,7 +10,7 @@ interface Merchant {
   distance: string;
   address: string;
   acceptsViego: boolean;
-  paymentMethods: string[];
+  terminalTypes: string[];
   position: {
     lat: number;
     lng: number;
@@ -59,9 +59,9 @@ export default function MerchantMap({ merchants, center, zoom = 14 }: MerchantMa
               onClick={() => setSelectedMerchant(merchant)}
             >
               <Pin
-                background={merchant.acceptsViego ? "#22c55e" : "#94a3b8"}
-                borderColor={merchant.acceptsViego ? "#15803d" : "#64748b"}
-                glyphColor={merchant.acceptsViego ? "#dcfce7" : "#f1f5f9"}
+                background="#3b82f6"
+                borderColor="#1e40af"
+                glyphColor="#dbeafe"
               />
             </AdvancedMarker>
           ))}
@@ -74,16 +74,7 @@ export default function MerchantMap({ merchants, center, zoom = 14 }: MerchantMa
               <div className="p-2">
                 <h3 className="font-bold text-gray-900 mb-1">{selectedMerchant.name}</h3>
                 <p className="text-sm text-gray-600 mb-2">{selectedMerchant.address}</p>
-                <p className="text-xs text-blue-600 font-semibold mb-2">{selectedMerchant.distance}</p>
-                {selectedMerchant.acceptsViego ? (
-                  <div className="bg-green-50 border border-green-200 rounded px-2 py-1">
-                    <span className="text-xs font-semibold text-green-700">✓ Accepts Viego Card</span>
-                  </div>
-                ) : (
-                  <div className="bg-gray-50 border border-gray-200 rounded px-2 py-1">
-                    <span className="text-xs font-semibold text-gray-600">Viego Card not accepted</span>
-                  </div>
-                )}
+                <p className="text-xs text-blue-600 font-semibold">{selectedMerchant.distance}</p>
               </div>
             </InfoWindow>
           )}

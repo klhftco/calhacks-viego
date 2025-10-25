@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
     const postalCode = searchParams.get('postalCode');
     const distance = searchParams.get('distance');
     const maxRecords = searchParams.get('maxRecords');
+    const startIndex = searchParams.get('startIndex');
 
     // Validate and limit maxRecords to prevent API errors
     const maxRecordsValue = maxRecords ? Math.min(parseInt(maxRecords), 25) : 25;
@@ -31,6 +32,7 @@ export async function GET(request: NextRequest) {
       ...(postalCode && { postalCode }),
       ...(distance && { distance: parseFloat(distance) }),
       maxRecords: maxRecordsValue,
+      ...(startIndex && { startIndex: parseInt(startIndex) }),
     };
 
     const merchants = await searchMerchants(params);

@@ -207,6 +207,7 @@ export async function searchMerchants(params: {
   postalCode?: string;
   distance?: number;
   maxRecords?: number;
+  startIndex?: number;
 }): Promise<VisaMerchant[]> {
   // Format: YYYY-MM-DDThh:mm:ss.sss (23 characters, no Z)
   const messageDateTime = new Date().toISOString().slice(0, 23);
@@ -216,7 +217,7 @@ export async function searchMerchants(params: {
     header: {
       messageDateTime,
       requestMessageId,
-      startIndex: '0',
+      startIndex: (params.startIndex || 0).toString(),
     },
     searchAttrList: {
       merchantCountryCode: 840, // USA
