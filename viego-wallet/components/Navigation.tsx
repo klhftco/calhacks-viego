@@ -12,6 +12,7 @@ export default function Navigation() {
     { href: "/island", icon: Egg, label: "Island" },
     { href: "/budget", icon: TrendingUp, label: "Budget" },
     { href: "/", icon: Home, label: "Home" },
+    { href: "/payments", icon: Calendar, label: "Payments" },
     { href: "/map", icon: MapPin, label: "Map" },
     { href: "/friends", icon: Users, label: "Friends" },
   ];
