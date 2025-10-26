@@ -34,3 +34,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local JSON storage (will be replaced with MongoDB)
+/data/*.json
+/data/
