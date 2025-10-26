@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { fetchOffersForMerchant, getSpendingStatus, checkoutTransaction } from '@/hooks/useMerchantOffers';
+import { useIsland } from '@/context/IslandContext';
 
 interface Props {
   merchant: { id: number | string; name: string; contentId?: string };
@@ -15,6 +16,7 @@ export default function SpendingAlert({ merchant, onClose }: Props) {
   const [amount, setAmount] = useState<string>("");
   const [quote, setQuote] = useState<any | null>(null);
   const [quoting, setQuoting] = useState(false);
+  const { currentXP, setXP } = useIsland();
 
   useEffect(() => {
     let mounted = true;
@@ -139,6 +141,13 @@ export default function SpendingAlert({ merchant, onClose }: Props) {
                         // refresh spending summary after committing
                         const s = await getSpendingStatus();
                         setSpending(s);
+                        // Award XP based on savings (bonus) and a tiny portion of spend
+                        const bonus = Math.max(0, Math.round((result?.savings || 0)));
+                        const spendXP = Math.max(0, Math.round((result?.finalAmount || 0) * 0.02));
+                        const gain = bonus + spendXP;
+                        if (gain > 0) {
+                          setXP(currentXP + gain);
+                        }
                       } finally {
                         setQuoting(false);
                       }

@@ -5,7 +5,7 @@ import React from 'react';
 type Slice = {
   label: string;
   value: number;
-  color: string; // tailwind color or hex
+  color: string; // CSS color value (e.g., #10b981)
 };
 
 interface Props {
@@ -26,6 +26,16 @@ export default function DonutChart({ data, size = 180, stroke = 18, centerLabel,
   return (
     <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        {/* background ring FIRST so slices render on top */}
+        <circle
+          cx={size/2}
+          cy={size/2}
+          r={radius}
+          fill="transparent"
+          strokeWidth={stroke}
+          stroke="#e5e7eb"
+          opacity={0.25}
+        />
         <g transform={`rotate(-90 ${size/2} ${size/2})`}>
           {data.map((slice, idx) => {
             const fraction = slice.value / total;
@@ -43,24 +53,13 @@ export default function DonutChart({ data, size = 180, stroke = 18, centerLabel,
                 fill="transparent"
                 strokeWidth={stroke}
                 strokeLinecap="butt"
-                stroke="currentColor"
-                className={slice.color}
+                stroke={slice.color}
                 strokeDasharray={strokeDasharray}
                 strokeDashoffset={strokeDashoffset}
               />
             );
           })}
         </g>
-        {/* background ring */}
-        <circle
-          cx={size/2}
-          cy={size/2}
-          r={radius}
-          fill="transparent"
-          strokeWidth={stroke}
-          stroke="#e5e7eb"
-          opacity={0.25}
-        />
       </svg>
       {(centerLabel || centerSubLabel) && (
         <div className="absolute text-center">

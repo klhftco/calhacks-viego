@@ -1,4 +1,5 @@
 import { Wallet, Egg, TrendingUp, ShoppingBag, Coffee, Bus } from "lucide-react";
+import MiniIsland from "@/components/MiniIsland";
 
 export default function Home() {
   return (
@@ -9,15 +10,8 @@ export default function Home() {
         <p className="text-gray-600">Good to see you again</p>
       </div>
 
-      {/* Isometric grassy area with creatures and a large tree */}
-      <div className="rounded-3xl p-8 mb-6 min-h-[260px] shadow-lg border-4 border-white relative overflow-hidden bg-gradient-to-br from-green-200 to-green-400">
-        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "linear-gradient(135deg, rgba(255,255,255,0.2) 25%, transparent 25%), linear-gradient(225deg, rgba(255,255,255,0.2) 25%, transparent 25%), linear-gradient(45deg, rgba(255,255,255,0.2) 25%, transparent 25%), linear-gradient(315deg, rgba(255,255,255,0.2) 25%, rgba(255,255,255,0) 25%)", backgroundSize: '40px 40px', backgroundPosition: '0 0, 0 20px, 20px -20px, -20px 0' }} />
-        <div className="absolute right-6 bottom-6 text-6xl">🌳</div>
-        <div className="absolute left-10 bottom-10 text-5xl animate-bounce">🦖</div>
-        <div className="absolute left-1/3 top-12 text-5xl">🦕</div>
-        <div className="absolute right-1/3 top-16 text-5xl">🐉</div>
-        <div className="absolute top-3 left-4 bg-white/90 rounded-full px-3 py-1 shadow">Viego Meadow</div>
-      </div>
+      {/* Mini Island (compact roaming scene) */}
+      <MiniIsland />
 
       {/* Current Balance */}
       <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-blue-200">

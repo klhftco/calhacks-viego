@@ -12,6 +12,7 @@ interface Friend {
   monsters: number;
   savingsGoalProgress: number;
   isOnline: boolean;
+  topMonster: string;
 }
 
 interface GroupActivity {
@@ -41,6 +42,7 @@ export default function FriendsPage() {
       monsters: 4,
       savingsGoalProgress: 85,
       isOnline: true,
+      topMonster: "🦕",
     },
     {
       id: 2,
@@ -51,6 +53,7 @@ export default function FriendsPage() {
       monsters: 3,
       savingsGoalProgress: 62,
       isOnline: true,
+      topMonster: "🦖",
     },
     {
       id: 3,
@@ -61,6 +64,7 @@ export default function FriendsPage() {
       monsters: 2,
       savingsGoalProgress: 45,
       isOnline: false,
+      topMonster: "🐉",
     },
     {
       id: 4,
@@ -71,6 +75,7 @@ export default function FriendsPage() {
       monsters: 5,
       savingsGoalProgress: 95,
       isOnline: true,
+      topMonster: "🦕",
     },
   ]);
 
@@ -117,6 +122,42 @@ export default function FriendsPage() {
     { rank: 5, name: "Emma Davis", score: 580, isCurrentUser: false },
   ]);
 
+  // Compute non-colliding bubble placements using concentric rings with dynamic capacity
+  const placements = (() => {
+    const maxDiameter = 92; // px
+    const padding = 32; // px spacing between bubbles (larger to avoid overlap)
+    const baseRadius = 150; // px
+    const ringGap = 160; // px between rings
+    type Ring = { radius: number; cap: number; items: number };
+    const rings: Ring[] = [];
+    const results: { idx: number; x: number; y: number; size: number; delay: number; dur: number }[] = [];
+    friends.forEach((_, idx) => {
+      // ensure a ring with available capacity
+      let ringIndex = 0;
+      while (true) {
+        if (!rings[ringIndex]) {
+          const radius = baseRadius + ringGap * ringIndex;
+          const cap = Math.max(1, Math.floor((2 * Math.PI * radius) / (maxDiameter + padding)));
+          rings[ringIndex] = { radius, cap, items: 0 };
+        }
+        if (rings[ringIndex].items < rings[ringIndex].cap) break;
+        ringIndex++;
+      }
+      const ring = rings[ringIndex];
+      const slot = ring.items;
+      ring.items++;
+      const step = (2 * Math.PI) / ring.cap;
+      const angle = -Math.PI / 2 + slot * step;
+      const x = Math.cos(angle) * ring.radius;
+      const y = Math.sin(angle) * ring.radius;
+      const size = idx % 3 === 0 ? 92 : 80;
+      const delay = (idx % 5) * 0.5;
+      const dur = 6 + (idx % 4);
+      results.push({ idx, x, y, size, delay, dur });
+    });
+    return results;
+  })();
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Page Header */}
@@ -125,49 +166,40 @@ export default function FriendsPage() {
         <p className="text-gray-600 text-sm">Your campus crew</p>
       </div>
 
-      {/* Floating bubbles for friends (clustered without overlap using concentric rings) */}
-      <div className="relative rounded-2xl p-8 shadow-lg border-2 border-blue-100 mb-8 min-h-[320px] overflow-hidden bg-gradient-to-br from-blue-50 to-green-50">
-        {friends.map((f, idx) => {
-          const ringCaps = [6, 12, 18];
-          const ringRadii = [90, 140, 180];
-          let ring = 0;
-          let pos = idx;
-          while (ring < ringCaps.length && pos >= ringCaps[ring]) {
-            pos -= ringCaps[ring];
-            ring++;
-          }
-          const cap = ringCaps[Math.min(ring, ringCaps.length - 1)];
-          const radius = ringRadii[Math.min(ring, ringRadii.length - 1)];
-          const step = (2 * Math.PI) / cap;
-          const angle = -Math.PI / 2 + pos * step; // start at top
-          const x = Math.cos(angle) * radius;
-          const y = Math.sin(angle) * radius;
-          const size = idx % 4 === 0 ? 64 : 56;
-          return (
-            <div
-              key={f.id}
-              className={`absolute rounded-full flex items-center justify-center text-2xl shadow-md ring-2 ${f.isOnline ? 'ring-green-300 bg-green-100' : 'ring-blue-200 bg-blue-100'}`}
-              style={{
-                width: size, height: size,
-                left: '50%', top: '50%',
-                transform: `translate(-50%, -50%) translate(${x}px, ${y}px)`,
-                animation: `float ${6 + (idx % 4)}s ease-in-out ${(idx % 5) * 0.6}s infinite alternate`,
-              }}
-              title={`${f.name} • ${f.university}`}
-            >
-              {f.avatar}
-            </div>
-          );
-        })}
+      {/* Floating friends (bigger, non-colliding, with top monster badge) */}
+      <div className="relative rounded-2xl p-8 shadow-lg border-2 border-blue-100 mb-8 min-h-[380px] overflow-hidden bg-gradient-to-br from-blue-50 to-green-50">
+        <div className="absolute inset-0">
+          {placements.map((p) => {
+            const f = friends[p.idx];
+            return (
+              <div
+                key={f.id}
+                className={`absolute rounded-full flex items-center justify-center text-3xl shadow-md ring-2 ${f.isOnline ? 'ring-green-300 bg-green-100' : 'ring-blue-200 bg-blue-100'}`}
+                style={{
+                  width: p.size, height: p.size,
+                  left: '50%', top: '50%',
+                  transform: `translate(-50%, -50%) translate(${p.x}px, ${p.y}px)`,
+                  animation: `float ${p.dur}s ease-in-out ${p.delay}s infinite alternate`,
+                }}
+                title={`${f.name} • ${f.university}`}
+              >
+                <span>{f.avatar}</span>
+                <span className="absolute -bottom-1 -right-1 bg-white rounded-full shadow ring-2 ring-white text-2xl w-7 h-7 flex items-center justify-center">
+                  {f.topMonster}
+                </span>
+              </div>
+            );
+          })}
+        </div>
         <style jsx>{`
-          @keyframes float { from { transform: translate(-50%, -50%) translate(0px, 0px); } to { transform: translate(-50%, -50%) translate(0px, -14px); } }
+          @keyframes float { from { transform: translate(-50%, -50%) translate(0px, 0px); } to { transform: translate(-50%, -50%) translate(0px, -4px); } }
         `}</style>
       </div>
 
-      {/* Below bubbles: two columns — left activity, right rank/XP */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Left: Group Activity (md: span 2) */}
-        <div className="md:col-span-2">
+      {/* Below bubbles: single column — group activity then your rank/XP merged below */}
+      <div className="grid grid-cols-1 gap-6 items-stretch">
+        {/* Group Activity */}
+        <div>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
               <MessageCircle className="text-blue-500" />
@@ -175,7 +207,7 @@ export default function FriendsPage() {
             </h2>
             <span className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">UC Berkeley Group</span>
           </div>
-          <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 overflow-hidden h-full">
             {groupActivities.map((activity, index) => {
               const Icon = activity.icon;
               return (
@@ -196,9 +228,9 @@ export default function FriendsPage() {
           </div>
         </div>
 
-        {/* Right: Rank and Group XP (aligned) */}
+        {/* Your Rank + Group XP (merged under activity) */}
         <div>
-          <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-blue-100">
+          <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-blue-100 flex flex-col">
             <div className="text-center mb-4">
               <div className="inline-flex items-center gap-2 text-blue-700 font-semibold">
                 <Trophy size={20} />
@@ -220,7 +252,7 @@ export default function FriendsPage() {
       </div>
 
       {/* Friends List */}
-      <div>
+      <div className="mt-10">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
             <Users className="text-green-500" />

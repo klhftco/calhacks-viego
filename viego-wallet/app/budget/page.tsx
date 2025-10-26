@@ -32,10 +32,10 @@ interface AutoPayment {
 
 export default function BudgetPage() {
   const [spendingLimits] = useState<SpendingLimit[]>([
-    { id: 1, category: "Food & Dining", icon: Coffee, limit: 200, spent: 145, color: "bg-green-500" },
-    { id: 2, category: "Shopping", icon: ShoppingBag, limit: 150, spent: 89, color: "bg-teal-500" },
-    { id: 3, category: "Transportation", icon: Bus, limit: 100, spent: 42, color: "bg-blue-500" },
-    { id: 4, category: "Housing", icon: Home, limit: 800, spent: 800, color: "bg-emerald-500" },
+    { id: 1, category: "Food & Dining", icon: Coffee, limit: 200, spent: 145, color: "#22c55e" }, // green-500
+    { id: 2, category: "Shopping", icon: ShoppingBag, limit: 150, spent: 89, color: "#06b6d4" }, // cyan-500
+    { id: 3, category: "Transportation", icon: Bus, limit: 100, spent: 42, color: "#3b82f6" }, // blue-500
+    { id: 4, category: "Housing", icon: Home, limit: 800, spent: 800, color: "#10b981" }, // emerald-500
   ]);
 
   const [transactions] = useState<Transaction[]>([
@@ -68,7 +68,7 @@ export default function BudgetPage() {
       <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-gray-100 mb-8">
         <div className="flex flex-col items-center">
           <DonutChart
-            data={spendingLimits.map((s) => ({ label: s.category, value: s.spent, color: s.color.replace('bg-', 'text-') }))}
+            data={spendingLimits.map((s) => ({ label: s.category, value: s.spent, color: s.color }))}
             size={280}
             stroke={26}
             centerLabel={`$${totalSpent}`}
@@ -77,7 +77,7 @@ export default function BudgetPage() {
           <div className="mt-6 grid grid-cols-2 gap-4 w-full max-w-sm text-sm">
             {spendingLimits.map((s) => (
               <div key={s.id} className="flex items-center gap-2">
-                <span className={`${s.color} inline-block w-3 h-3 rounded-full`} />
+                <span className={`inline-block w-3 h-3 rounded-full`} style={{backgroundColor: s.color}} />
                 <span className="text-gray-700 font-medium truncate">{s.category}</span>
                 <span className="ml-auto text-gray-900 font-semibold">${s.spent}</span>
               </div>
@@ -254,7 +254,7 @@ export default function BudgetPage() {
                 </div>
                 <div className="text-right">
                   <p className={`text-xl font-bold ${isPositive ? 'text-green-600' : 'text-gray-900'}`}>
-                    {isPositive ? '+' : ''}{transaction.amount < 0 ? transaction.amount : `+${transaction.amount}`}
+                    {isPositive ? `+$${transaction.amount.toFixed(2)}` : `-$${Math.abs(transaction.amount).toFixed(2)}`}
                   </p>
                   <p className="text-sm text-gray-500">{transaction.category}</p>
                 </div>
