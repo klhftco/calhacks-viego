@@ -29,7 +29,7 @@ export default function MerchantMap({ merchants, center, zoom = 14 }: MerchantMa
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
   // Default center (Berkeley, CA)
-  const defaultCenter = { lat: 37.8715, lng: -122.2730 };
+  const defaultCenter = { lat: 37.871966, lng: -122.259960 };
   const mapCenter = center || defaultCenter;
 
   if (!apiKey) {

@@ -42,7 +42,6 @@ function getIconComponent(iconName: string) {
 export default function MapPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [useRealData, setUseRealData] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,81 +55,6 @@ export default function MapPage() {
     { id: "entertainment", label: "Entertainment", icon: Heart },
     { id: "services", label: "Services", icon: ShoppingBag },
   ];
-
-  const [merchants] = useState<Merchant[]>([
-    {
-      id: 1,
-      name: "Campus Coffee",
-      category: "food",
-      distance: "0.2 mi",
-      address: "123 University Ave",
-      acceptsViego: true,
-      icon: Coffee,
-      color: "bg-orange-500",
-      terminalTypes: ["Swipe", "Chip", "Contactless"],
-      position: { lat: 37.8716, lng: -122.2727 },
-    },
-    {
-      id: 2,
-      name: "Student Bookstore",
-      category: "education",
-      distance: "0.3 mi",
-      address: "45 Campus Dr",
-      acceptsViego: true,
-      icon: Book,
-      color: "bg-blue-500",
-      terminalTypes: ["Chip", "Contactless"],
-      position: { lat: 37.8697, lng: -122.2596 },
-    },
-    {
-      id: 3,
-      name: "Pizza Palace",
-      category: "dining",
-      distance: "0.5 mi",
-      address: "789 College Blvd",
-      acceptsViego: true,
-      icon: Utensils,
-      color: "bg-red-500",
-      terminalTypes: ["Swipe", "Chip", "Contactless"],
-      position: { lat: 37.8735, lng: -122.2675 },
-    },
-    {
-      id: 4,
-      name: "Campus Transit Hub",
-      category: "transit",
-      distance: "0.1 mi",
-      address: "1 Transit Center",
-      acceptsViego: true,
-      icon: Bus,
-      color: "bg-green-500",
-      terminalTypes: ["Contactless"],
-      position: { lat: 37.8701, lng: -122.2700 },
-    },
-    {
-      id: 5,
-      name: "Fashion Boutique",
-      category: "shopping",
-      distance: "0.8 mi",
-      address: "234 Downtown St",
-      acceptsViego: false,
-      icon: ShoppingBag,
-      color: "bg-pink-500",
-      terminalTypes: ["Swipe", "Chip"],
-      position: { lat: 37.8750, lng: -122.2650 },
-    },
-    {
-      id: 6,
-      name: "Healthy Bites Cafe",
-      category: "food",
-      distance: "0.4 mi",
-      address: "567 Health Way",
-      acceptsViego: true,
-      icon: Coffee,
-      color: "bg-orange-500",
-      terminalTypes: ["Chip", "Contactless"],
-      position: { lat: 37.8690, lng: -122.2710 },
-    },
-  ]);
 
   const [realMerchants, setRealMerchants] = useState<Merchant[]>([]);
 
@@ -219,7 +143,7 @@ export default function MapPage() {
         while (allMerchants.length < 25 && attempts < maxAttempts) {
           console.log(`Attempt ${attempts + 1}: Fetching from startIndex ${startIndex}...`);
           const response = await fetch(
-            `/api/merchants?latitude=37.8715&longitude=-122.2730&distance=5&maxRecords=25&startIndex=${startIndex}`
+            `/api/merchants?latitude=37.871966&longitude=-122.259960&distance=5&maxRecords=25&startIndex=${startIndex}`
           );
           const data = await response.json();
 
@@ -266,7 +190,7 @@ export default function MapPage() {
         while (categoryMerchants.length < 25 && attempts < maxAttempts) {
           console.log(`Attempt ${attempts + 1}: Fetching from startIndex ${startIndex}...`);
           const response = await fetch(
-            `/api/merchants?latitude=37.8715&longitude=-122.2730&distance=5&maxRecords=25&startIndex=${startIndex}`
+            `/api/merchants?latitude=37.871966&longitude=-122.259960&distance=5&maxRecords=25&startIndex=${startIndex}`
           );
           const data = await response.json();
 
@@ -309,15 +233,13 @@ export default function MapPage() {
     }
   };
 
-  // Fetch real data when toggle is switched or category changes
+  // Auto-load real merchant data on page load and when category changes
   useEffect(() => {
-    if (useRealData) {
-      fetchRealMerchants(selectedCategory);
-    }
-  }, [useRealData, selectedCategory]);
+    fetchRealMerchants(selectedCategory);
+  }, [selectedCategory]);
 
-  // Use real or mock data based on toggle
-  const displayMerchants = useRealData ? realMerchants : merchants;
+  // Use real merchant data
+  const displayMerchants = realMerchants;
 
   const filteredMerchants = displayMerchants.filter((merchant) => {
     const matchesSearch = merchant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -353,33 +275,18 @@ export default function MapPage() {
         </div>
       </div>
 
-      {/* Data Source Toggle */}
-      <div className="mb-6 flex items-center justify-between bg-white p-4 rounded-xl shadow-md">
-        <div className="flex items-center gap-3">
-          <span className="text-gray-700 font-semibold">Data Source:</span>
-          <span className={`px-3 py-1 rounded-full text-sm font-semibold ${useRealData ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
-            {useRealData ? '🔴 Live Visa API' : '📦 Mock Data'}
-          </span>
+      {/* Loading/Error Status */}
+      {isLoading && (
+        <div className="mb-6 flex items-center justify-center bg-blue-50 p-4 rounded-xl shadow-md">
+          <RefreshCw size={20} className="inline animate-spin mr-2 text-blue-600" />
+          <span className="text-blue-700 font-semibold">Loading merchants from Visa API...</span>
         </div>
-        <button
-          onClick={() => setUseRealData(!useRealData)}
-          disabled={isLoading}
-          className={`px-6 py-2 rounded-full font-semibold transition-all ${
-            useRealData
-              ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              : 'bg-green-500 text-white hover:bg-green-600'
-          } disabled:opacity-50 disabled:cursor-not-allowed`}
-        >
-          {isLoading ? (
-            <><RefreshCw size={16} className="inline animate-spin mr-2" />Loading...</>
-          ) : (
-            useRealData ? 'Use Mock Data' : 'Load Real Visa Data'
-          )}
-        </button>
-        {error && (
-          <div className="text-red-600 text-sm ml-4">{error}</div>
-        )}
-      </div>
+      )}
+      {error && (
+        <div className="mb-6 bg-red-50 border-2 border-red-200 p-4 rounded-xl shadow-md">
+          <p className="text-red-600 font-semibold">{error}</p>
+        </div>
+      )}
 
       {/* Search Bar */}
       <div className="mb-6">
