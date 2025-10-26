@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Egg, TrendingUp, MapPin, Users } from "lucide-react";
+import { Home, Egg, TrendingUp, MapPin, Gift, Users, Calendar } from "lucide-react";
 
 export default function Navigation() {
   const pathname = usePathname();

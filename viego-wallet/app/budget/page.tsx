@@ -1,34 +1,67 @@
 "use client";
 
-import { useState } from "react";
-import { DollarSign, TrendingUp, TrendingDown, Bell, Calendar, CreditCard, ShoppingBag, Coffee, Bus, Home } from "lucide-react";
+import { useState, useEffect } from "react";
+import { DollarSign, TrendingUp, TrendingDown, Bell, Calendar, CreditCard, ShoppingBag, Coffee, Bus, Home, RefreshCw } from "lucide-react";
 import DonutChart from "@/components/DonutChart";
 
-interface SpendingLimit {
-  id: number;
-  category: string;
-  icon: any;
-  limit: number;
-  spent: number;
-  color: string;
-}
+type User = {
+  userIdentifier: string;
+  firstName: string;
+  lastName: string;
+  pan: string;
+  email: string;
+  description: string;
+};
 
-interface Transaction {
-  id: number;
-  merchant: string;
-  amount: number;
-  category: string;
-  date: string;
-  icon: any;
-}
+type Alert = any;
 
-interface AutoPayment {
-  id: number;
-  name: string;
-  amount: number;
-  dueDate: string;
-  icon: any;
-}
+type BudgetLimit = {
+  controlType: string;
+  alertThreshold: number;
+  declineThreshold: number;
+  currentSpend: number;
+};
+
+const USERS: User[] = [
+  {
+    userIdentifier: "bailey-student-001",
+    firstName: "Bailey",
+    lastName: "Chen",
+    pan: "4514170000000001",
+    email: "bailey@university.edu",
+    description: "Budget-conscious freshman trying to save money",
+  },
+  {
+    userIdentifier: "oliver-student-002",
+    firstName: "Oliver",
+    lastName: "Martinez",
+    pan: "4514170000000002",
+    email: "oliver@university.edu",
+    description: "Junior managing overspending habits",
+  },
+];
+
+// Mock data for demo (alerts are only generated when thresholds are exceeded)
+const MOCK_TRANSACTIONS = {
+  "bailey-student-001": [
+    { merchantName: "Whole Foods", amount: 45.00, controlType: "MCT_GROCERY", decision: "APPROVED", timestamp: "2025-10-25T14:30:00Z" },
+    { merchantName: "Safeway", amount: 62.50, controlType: "MCT_GROCERY", decision: "APPROVED", timestamp: "2025-10-25T09:15:00Z" },
+    { merchantName: "Costco", amount: 89.99, controlType: "MCT_GROCERY", decision: "APPROVED", timestamp: "2025-10-24T16:20:00Z" },
+    { merchantName: "Trader Joes", amount: 28.00, controlType: "MCT_GROCERY", decision: "APPROVED", timestamp: "2025-10-24T10:45:00Z" },
+    { merchantName: "Liquor Store", amount: 25.00, controlType: "MCT_ALCOHOL", decision: "DECLINED", timestamp: "2025-10-23T21:15:00Z" },
+    { merchantName: "Wine Shop", amount: 35.00, controlType: "MCT_ALCOHOL", decision: "DECLINED", timestamp: "2025-10-23T19:00:00Z" },
+    { merchantName: "Casino Royale", amount: 50.00, controlType: "MCT_GAMBLING", decision: "DECLINED", timestamp: "2025-10-22T23:30:00Z" },
+    { merchantName: "Target Groceries", amount: 42.00, controlType: "MCT_GROCERY", decision: "APPROVED", timestamp: "2025-10-22T18:00:00Z" },
+  ],
+  "oliver-student-002": [
+    { merchantName: "Best Buy", amount: 35.00, controlType: "MCT_ELECTRONICS", decision: "APPROVED", timestamp: "2025-10-25T19:30:00Z" },
+    { merchantName: "Apple Store", amount: 45.00, controlType: "MCT_ELECTRONICS", decision: "APPROVED", timestamp: "2025-10-24T15:20:00Z" },
+    { merchantName: "Nordstrom", amount: 85.00, controlType: "MCT_APPAREL_AND_ACCESSORIES", decision: "APPROVED", timestamp: "2025-10-23T20:00:00Z" },
+    { merchantName: "GameStop Electronics", amount: 60.00, controlType: "MCT_ELECTRONICS", decision: "APPROVED", timestamp: "2025-10-23T14:15:00Z" },
+    { merchantName: "Zara", amount: 50.00, controlType: "MCT_APPAREL_AND_ACCESSORIES", decision: "DECLINED", timestamp: "2025-10-22T19:30:00Z" },
+    { merchantName: "H&M", amount: 15.99, controlType: "MCT_APPAREL_AND_ACCESSORIES", decision: "DECLINED", timestamp: "2025-10-21T16:00:00Z" },
+  ],
+};
 
 export default function BudgetPage() {
   const [spendingLimits] = useState<SpendingLimit[]>([
@@ -37,230 +70,711 @@ export default function BudgetPage() {
     { id: 3, category: "Transportation", icon: Bus, limit: 100, spent: 42, color: "#3b82f6" }, // blue-500
     { id: 4, category: "Housing", icon: Home, limit: 800, spent: 800, color: "#10b981" }, // emerald-500
   ]);
+  const [selectedUser, setSelectedUser] = useState<User>(USERS[0]);
+  const [activeTab, setActiveTab] = useState<"overview" | "simulate" | "limits">("overview");
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [availableControls, setAvailableControls] = useState<string[]>([]);
 
-  const [transactions] = useState<Transaction[]>([
-    { id: 1, merchant: "Campus Cafe", amount: -12.50, category: "Food", date: "Today, 2:30 PM", icon: Coffee },
-    { id: 2, merchant: "Campus Bookstore", amount: -45.00, category: "Shopping", date: "Today, 11:00 AM", icon: ShoppingBag },
-    { id: 3, merchant: "Monthly Transit Pass", amount: -42.00, category: "Transport", date: "Yesterday", icon: Bus },
-    { id: 4, merchant: "Scholarship Deposit", amount: 500.00, category: "Income", date: "Oct 20", icon: TrendingUp },
-  ]);
+  // Simulate transaction state
+  const [simAmount, setSimAmount] = useState("25.00");
+  const [simMerchant, setSimMerchant] = useState("Test Merchant");
+  const [simMCC, setSimMCC] = useState("5812");
 
-  const [autoPayments] = useState<AutoPayment[]>([
-    { id: 1, name: "Rent Payment", amount: 800, dueDate: "Nov 1", icon: Home },
-    { id: 2, name: "Tuition Installment", amount: 2500, dueDate: "Nov 15", icon: CreditCard },
-    { id: 3, name: "Transit Pass", amount: 42, dueDate: "Nov 1", icon: Bus },
-  ]);
+  // Add limit state
+  const [selectedControl, setSelectedControl] = useState("");
+  const [newAlertThreshold, setNewAlertThreshold] = useState("100");
+  const [newDeclineThreshold, setNewDeclineThreshold] = useState("150");
 
-  const totalSpent = 1076;
-  const totalIncome = 1500;
-  const savingsGoal = 500;
-  const currentSavings = 424;
+  useEffect(() => {
+    loadData();
+  }, [selectedUser]);
+
+  async function loadData() {
+    setLoading(true);
+    try {
+      // Fetch alerts/transaction history
+      const alertsRes = await fetch(
+        `/api/vctc/alerts?userIdentifier=${encodeURIComponent(selectedUser.userIdentifier)}`
+      );
+      if (alertsRes.ok) {
+        const data = await alertsRes.json();
+        const realAlerts = data.result?.alerts || [];
+
+        // Use mock data if no real alerts (sandbox limitation: test cards don't support merchant controls)
+        if (realAlerts.length === 0 && MOCK_TRANSACTIONS[selectedUser.userIdentifier as keyof typeof MOCK_TRANSACTIONS]) {
+          setAlerts(MOCK_TRANSACTIONS[selectedUser.userIdentifier as keyof typeof MOCK_TRANSACTIONS]);
+        } else {
+          setAlerts(realAlerts);
+        }
+      }
+
+      // Fetch available controls
+      const controlsRes = await fetch(
+        `/api/vctc/available-controls?pan=${encodeURIComponent(selectedUser.pan)}`
+      );
+      if (controlsRes.ok) {
+        const data = await controlsRes.json();
+        const merchantTypes =
+          data.merchantControls?.resource?.merchantControls?.map((c: any) => c.name) || [];
+        setAvailableControls(merchantTypes);
+      }
+    } catch (error) {
+      console.error("Error loading data:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleSimulateTransaction() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/vctc/decision", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          primaryAccountNumber: selectedUser.pan,
+          amount: parseFloat(simAmount),
+          merchantName: simMerchant,
+          merchantCategoryCode: simMCC,
+        }),
+      });
+      const data = await res.json();
+
+      const decision = data.result?.decision || data.result?.decisionResponse?.decision || "UNKNOWN";
+      alert(
+        `Transaction ${decision === "APPROVED" ? "✓ APPROVED" : decision === "DECLINED" ? "✗ DECLINED" : "processed"}!\n\nMerchant: ${simMerchant}\nAmount: $${simAmount}`
+      );
+
+      // Reload alerts
+      await loadData();
+    } catch (error: any) {
+      alert(`Error: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Calculate spending by category from alerts
+  const spendingByCategory = alerts.reduce((acc, alert) => {
+    const category = alert.controlType || "OTHER";
+    const amount = alert.amount || 0;
+    if (alert.decision === "APPROVED" || alert.decision === "APPROVE") {
+      acc[category] = (acc[category] || 0) + amount;
+    }
+    return acc;
+  }, {} as Record<string, number>);
+
+  // Calculate budget limits (based on user - using actual VCTC controls)
+  const budgetLimits: BudgetLimit[] =
+    selectedUser.firstName === "Bailey"
+      ? [
+          {
+            controlType: "MCT_GROCERY",
+            alertThreshold: 150,
+            declineThreshold: 200,
+            currentSpend: spendingByCategory["MCT_GROCERY"] || 0,
+          },
+          {
+            controlType: "MCT_ALCOHOL",
+            alertThreshold: 0,
+            declineThreshold: 0,
+            currentSpend: spendingByCategory["MCT_ALCOHOL"] || 0,
+          },
+          {
+            controlType: "MCT_GAMBLING",
+            alertThreshold: 0,
+            declineThreshold: 0,
+            currentSpend: spendingByCategory["MCT_GAMBLING"] || 0,
+          },
+        ]
+      : [
+          {
+            controlType: "MCT_ELECTRONICS",
+            alertThreshold: 100,
+            declineThreshold: 150,
+            currentSpend: spendingByCategory["MCT_ELECTRONICS"] || 0,
+          },
+          {
+            controlType: "MCT_APPAREL_AND_ACCESSORIES",
+            alertThreshold: 75,
+            declineThreshold: 125,
+            currentSpend: spendingByCategory["MCT_APPAREL_AND_ACCESSORIES"] || 0,
+          },
+          {
+            controlType: "MCT_ADULT_ENTERTAINMENT",
+            alertThreshold: 50,
+            declineThreshold: 100,
+            currentSpend: spendingByCategory["MCT_ADULT_ENTERTAINMENT"] || 0,
+          },
+        ];
+
+  // Calculate blocked transactions
+  const blockedTransactions = alerts.filter((a) => a.decision === "DECLINED" || a.decision === "DECLINE");
+  const approvedTransactions = alerts.filter((a) => a.decision === "APPROVED" || a.decision === "APPROVE");
+
+  // Calculate total savings from blocked transactions
+  const totalBlocked = blockedTransactions.reduce((sum, tx) => sum + (tx.amount || 0), 0);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Page Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Budget</h1>
-        <p className="text-gray-600 text-sm">Track spending, limits, and bills</p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+        <div className="container mx-auto px-4 py-6">
+          <h1 className="text-3xl font-bold mb-2">Viego Student Wallet</h1>
+          <p className="text-blue-100">Smart budgeting powered by Visa Transaction Controls</p>
+        </div>
       </div>
 
-      {/* Donut Finance Visual (centered and larger) */}
-      <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-gray-100 mb-8">
-        <div className="flex flex-col items-center">
-          <DonutChart
-            data={spendingLimits.map((s) => ({ label: s.category, value: s.spent, color: s.color }))}
-            size={280}
-            stroke={26}
-            centerLabel={`$${totalSpent}`}
-            centerSubLabel={`of $${totalIncome}`}
-          />
-          <div className="mt-6 grid grid-cols-2 gap-4 w-full max-w-sm text-sm">
-            {spendingLimits.map((s) => (
-              <div key={s.id} className="flex items-center gap-2">
-                <span className={`inline-block w-3 h-3 rounded-full`} style={{backgroundColor: s.color}} />
-                <span className="text-gray-700 font-medium truncate">{s.category}</span>
-                <span className="ml-auto text-gray-900 font-semibold">${s.spent}</span>
-              </div>
+      <div className="container mx-auto px-4 py-6">
+        {/* User Selection */}
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <CreditCard className="text-blue-600" />
+            Select Student Profile
+          </h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            {USERS.map((user) => (
+              <button
+                key={user.userIdentifier}
+                onClick={() => setSelectedUser(user)}
+                className={`p-5 rounded-xl border-2 transition-all text-left ${
+                  selectedUser.userIdentifier === user.userIdentifier
+                    ? "border-blue-500 bg-blue-50 shadow-md"
+                    : "border-gray-200 hover:border-gray-300 hover:shadow"
+                }`}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-2xl shadow-lg">
+                    {user.firstName[0]}
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-bold text-lg">
+                      {user.firstName} {user.lastName}
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">{user.description}</div>
+                    <div className="text-xs text-gray-400 font-mono mt-1">
+                      {user.email}
+                    </div>
+                  </div>
+                  {selectedUser.userIdentifier === user.userIdentifier && (
+                    <div className="text-blue-600 font-bold">✓</div>
+                  )}
+                </div>
+              </button>
             ))}
           </div>
         </div>
-      </div>
 
-      {/* Budget Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-blue-200">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold text-gray-700">Monthly Income</h3>
-            <TrendingUp className="text-green-500" size={24} />
-          </div>
-          <p className="text-3xl font-bold text-gray-900">${totalIncome}</p>
-          <p className="text-sm text-green-600 mt-2">+$500 this month</p>
-        </div>
-
-        <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-blue-200">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold text-gray-700">Total Spent</h3>
-            <TrendingDown className="text-blue-600" size={24} />
-          </div>
-          <p className="text-3xl font-bold text-gray-900">${totalSpent}</p>
-          <p className="text-sm text-gray-500 mt-2">{((totalSpent/totalIncome)*100).toFixed(1)}% of income</p>
-        </div>
-
-        <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-green-200">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold text-gray-700">Savings Goal</h3>
-            <DollarSign className="text-green-500" size={24} />
-          </div>
-          <p className="text-3xl font-bold text-gray-900">${currentSavings}</p>
-          <div className="mt-2">
-            <div className="bg-gray-200 rounded-full h-2 overflow-hidden">
-              <div
-                className="bg-green-500 h-full rounded-full"
-                style={{ width: `${(currentSavings/savingsGoal)*100}%` }}
-              />
+        {/* Quick Stats */}
+        <div className="grid md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white border-l-4 border-green-500 rounded-lg shadow p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm text-gray-600 font-medium">Approved</div>
+                <div className="text-2xl font-bold text-gray-900">{approvedTransactions.length}</div>
+              </div>
+              <TrendingUp className="text-green-500" size={32} />
             </div>
-            <p className="text-sm text-gray-500 mt-1">{((currentSavings/savingsGoal)*100).toFixed(0)}% to ${savingsGoal}</p>
+          </div>
+
+          <div className="bg-white border-l-4 border-red-500 rounded-lg shadow p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm text-gray-600 font-medium">Blocked</div>
+                <div className="text-2xl font-bold text-gray-900">{blockedTransactions.length}</div>
+              </div>
+              <Bell className="text-red-500" size={32} />
+            </div>
+          </div>
+
+          <div className="bg-white border-l-4 border-blue-500 rounded-lg shadow p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm text-gray-600 font-medium">Saved</div>
+                <div className="text-2xl font-bold text-gray-900">${totalBlocked.toFixed(2)}</div>
+              </div>
+              <DollarSign className="text-blue-500" size={32} />
+            </div>
+          </div>
+
+          <div className="bg-white border-l-4 border-purple-500 rounded-lg shadow p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm text-gray-600 font-medium">Total</div>
+                <div className="text-2xl font-bold text-gray-900">{alerts.length}</div>
+              </div>
+              <Calendar className="text-purple-500" size={32} />
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Positive Nudge Banner */}
-      <div className="bg-gradient-to-r from-blue-500 to-green-500 rounded-2xl p-6 mb-8 text-white shadow-lg">
-        <div className="flex items-start gap-4">
-          <div className="bg-white/20 rounded-full p-3 mt-1">
-            <Bell size={24} />
+        {/* Tabs */}
+        <div className="bg-white rounded-lg shadow-lg mb-6">
+          <div className="border-b">
+            <div className="flex">
+              <button
+                onClick={() => setActiveTab("overview")}
+                className={`flex-1 px-6 py-4 font-semibold transition-all ${
+                  activeTab === "overview"
+                    ? "border-b-4 border-blue-500 text-blue-600 bg-blue-50"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                }`}
+              >
+                📊 Budget Overview
+              </button>
+              <button
+                onClick={() => setActiveTab("simulate")}
+                className={`flex-1 px-6 py-4 font-semibold transition-all ${
+                  activeTab === "simulate"
+                    ? "border-b-4 border-blue-500 text-blue-600 bg-blue-50"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                }`}
+              >
+                🎮 Simulate Transaction
+              </button>
+              <button
+                onClick={() => setActiveTab("limits")}
+                className={`flex-1 px-6 py-4 font-semibold transition-all ${
+                  activeTab === "limits"
+                    ? "border-b-4 border-blue-500 text-blue-600 bg-blue-50"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                }`}
+              >
+                🎯 Manage Limits
+              </button>
+            </div>
           </div>
-          <div>
-            <h3 className="text-xl font-bold mb-2">You&#39;re doing great! 🎉</h3>
-            <p className="text-white/90 text-lg">
-              You&#39;re 85% to your savings goal! Skip that $12 delivery fee and you&#39;ll hit it by Friday.
-              Your monsters are cheering you on! 🦖
-            </p>
-          </div>
-        </div>
-      </div>
 
-      {/* Spending Limits by Category */}
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">Spending Limits</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {spendingLimits.map((limit) => {
-            const Icon = limit.icon;
-            const percentage = (limit.spent / limit.limit) * 100;
-            const isNearLimit = percentage >= 80;
-
-            return (
-              <div key={limit.id} className="bg-white rounded-2xl p-6 shadow-lg border-2 border-gray-100">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className={`${limit.color} text-white rounded-full p-3`}>
-                      <Icon size={24} />
+          <div className="p-6">
+            {/* Overview Tab */}
+            {activeTab === "overview" && (
+              <div className="space-y-6">
+                {/* Spending Insights Banner */}
+                {blockedTransactions.length > 0 && (
+                  <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-6 text-white shadow-lg">
+                    <div className="flex items-start gap-4">
+                      <div className="bg-white/20 rounded-full p-3">
+                        <Bell size={28} />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold mb-2">Great job, {selectedUser.firstName}! 🎉</h3>
+                        <p className="text-white/90 text-lg">
+                          You've blocked {blockedTransactions.length} impulse purchases this month, saving ${totalBlocked.toFixed(2)}. Keep it up!
+                        </p>
+                      </div>
                     </div>
+                  </div>
+                )}
+
+                {/* Budget Progress Bars */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-2xl font-bold">Budget Progress</h3>
+                    <button
+                      onClick={loadData}
+                      disabled={loading}
+                      className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                    >
+                      <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
+                      Refresh
+                    </button>
+                  </div>
+                  <div className="space-y-5">
+                    {budgetLimits.map((limit) => {
+                      const percentage = limit.declineThreshold > 0
+                        ? Math.min((limit.currentSpend / limit.declineThreshold) * 100, 100)
+                        : 0;
+                      const isBlocked = limit.declineThreshold === 0;
+                      const isNearLimit = percentage >= 75 && !isBlocked;
+                      const isOverLimit = percentage >= 100;
+
+                      return (
+                        <div key={limit.controlType} className="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <h4 className="font-bold text-lg">{limit.controlType}</h4>
+                              {isBlocked && (
+                                <span className="text-sm text-red-600 font-semibold">🚫 COMPLETELY BLOCKED</span>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              <div className="text-2xl font-bold">
+                                ${limit.currentSpend.toFixed(2)}
+                              </div>
+                              {!isBlocked && (
+                                <div className="text-sm text-gray-600">
+                                  of ${limit.declineThreshold.toFixed(2)}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {!isBlocked && (
+                            <>
+                              <div className="w-full bg-gray-300 rounded-full h-5 overflow-hidden shadow-inner">
+                                <div
+                                  className={`h-full rounded-full transition-all duration-500 ${
+                                    isOverLimit
+                                      ? "bg-red-500"
+                                      : isNearLimit
+                                      ? "bg-yellow-500"
+                                      : "bg-green-500"
+                                  }`}
+                                  style={{ width: `${percentage}%` }}
+                                />
+                              </div>
+                              <div className="flex justify-between mt-2 text-sm">
+                                <span className="text-gray-600">
+                                  Alert at ${limit.alertThreshold}
+                                </span>
+                                <span
+                                  className={`font-semibold ${
+                                    isOverLimit
+                                      ? "text-red-600"
+                                      : isNearLimit
+                                      ? "text-yellow-600"
+                                      : "text-green-600"
+                                  }`}
+                                >
+                                  {percentage.toFixed(1)}% used
+                                </span>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Spending by Category */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                    <h4 className="font-bold text-lg mb-4">Spending by Category</h4>
+                    <div className="space-y-3">
+                      {Object.entries(spendingByCategory)
+                        .sort(([, a], [, b]) => b - a)
+                        .slice(0, 6)
+                        .map(([category, amount]) => (
+                          <div key={category} className="flex justify-between items-center">
+                            <span className="text-gray-700">{category}</span>
+                            <span className="font-bold text-gray-900">${amount.toFixed(2)}</span>
+                          </div>
+                        ))}
+                      {Object.keys(spendingByCategory).length === 0 && (
+                        <p className="text-gray-500 text-center py-4">No spending data yet</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="bg-blue-50 rounded-xl p-5 border border-blue-200">
+                    <h4 className="font-bold text-lg mb-4">💡 Smart Insights</h4>
+                    <div className="space-y-3 text-sm">
+                      {blockedTransactions.length > 0 && (
+                        <div className="flex items-start gap-2">
+                          <span className="text-lg">🛡️</span>
+                          <span>
+                            Blocked {blockedTransactions.length} transactions, saving ${totalBlocked.toFixed(2)}
+                          </span>
+                        </div>
+                      )}
+                      {budgetLimits.some((l) => l.declineThreshold > 0 && (l.currentSpend / l.declineThreshold) * 100 >= 75) && (
+                        <div className="flex items-start gap-2">
+                          <span className="text-lg">⚠️</span>
+                          <span>Approaching spending limits in some categories</span>
+                        </div>
+                      )}
+                      {approvedTransactions.length > 0 && (
+                        <div className="flex items-start gap-2">
+                          <span className="text-lg">📈</span>
+                          <span>{approvedTransactions.length} approved transactions this period</span>
+                        </div>
+                      )}
+                      {alerts.length === 0 && (
+                        <div className="flex items-start gap-2">
+                          <span className="text-lg">🎯</span>
+                          <span>No transaction history yet. Try simulating some transactions!</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recent Transactions */}
+                <div>
+                  <h3 className="text-2xl font-bold mb-4">Recent Transactions</h3>
+                  <div className="space-y-2">
+                    {alerts.slice(0, 10).map((alert, idx) => {
+                      const isApproved = alert.decision === "APPROVED" || alert.decision === "APPROVE";
+                      const isDeclined = alert.decision === "DECLINED" || alert.decision === "DECLINE";
+
+                      return (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
+                        >
+                          <div className="flex items-center gap-4">
+                            <div
+                              className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl shadow ${
+                                isApproved
+                                  ? "bg-green-500"
+                                  : isDeclined
+                                  ? "bg-red-500"
+                                  : "bg-gray-400"
+                              }`}
+                            >
+                              {isApproved ? "✓" : isDeclined ? "✗" : "?"}
+                            </div>
+                            <div>
+                              <div className="font-semibold text-lg">{alert.merchantName || "Unknown Merchant"}</div>
+                              <div className="text-sm text-gray-600">
+                                {alert.controlType || "N/A"}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-bold text-xl">
+                              ${(alert.amount || 0).toFixed(2)}
+                            </div>
+                            <div
+                              className={`text-xs font-semibold uppercase ${
+                                isApproved
+                                  ? "text-green-600"
+                                  : isDeclined
+                                  ? "text-red-600"
+                                  : "text-gray-600"
+                              }`}
+                            >
+                              {alert.decision || "Unknown"}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {alerts.length === 0 && (
+                      <div className="text-center py-12 bg-white rounded-lg border-2 border-dashed border-gray-300">
+                        <p className="text-gray-500 text-lg">No transactions yet</p>
+                        <p className="text-gray-400 text-sm mt-2">Use the "Simulate Transaction" tab to create test data</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Simulate Transaction Tab */}
+            {activeTab === "simulate" && (
+              <div className="space-y-6">
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+                  <h3 className="text-xl font-bold mb-2">Test Your Budget Controls</h3>
+                  <p className="text-gray-700">
+                    Simulate transactions to see how your budget rules respond. This helps you test and understand your spending limits before real purchases.
+                  </p>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Merchant Name</label>
+                    <input
+                      type="text"
+                      value={simMerchant}
+                      onChange={(e) => setSimMerchant(e.target.value)}
+                      className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none"
+                      placeholder="Starbucks"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Amount ($)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={simAmount}
+                      onChange={(e) => setSimAmount(e.target.value)}
+                      className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none"
+                      placeholder="25.00"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold mb-2">
+                      Merchant Category Code (MCC)
+                    </label>
+                    <select
+                      value={simMCC}
+                      onChange={(e) => setSimMCC(e.target.value)}
+                      className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none"
+                    >
+                      <option value="5812">5812 - Restaurants/Dining</option>
+                      <option value="5411">5411 - Grocery Stores</option>
+                      <option value="5999">5999 - Miscellaneous Retail</option>
+                      <option value="5921">5921 - Liquor Stores</option>
+                      <option value="7995">7995 - Gambling</option>
+                      <option value="7832">7832 - Movie Theaters/Entertainment</option>
+                      <option value="5541">5541 - Gas Stations</option>
+                      <option value="5942">5942 - Bookstores</option>
+                      <option value="7841">7841 - Streaming Services</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleSimulateTransaction}
+                  disabled={loading}
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl py-4 text-lg font-bold hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
+                >
+                  {loading ? "Processing..." : "🎮 Simulate Transaction"}
+                </button>
+
+                <div className="bg-yellow-50 border border-yellow-300 rounded-xl p-5">
+                  <div className="font-bold text-yellow-900 mb-3">💡 Test Scenarios:</div>
+                  <ul className="text-sm text-yellow-800 space-y-2">
+                    <li className="flex items-start gap-2">
+                      <span>•</span>
+                      <span><strong>Bailey:</strong> Try liquor store (MCC 5921) - Should be blocked completely</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span>•</span>
+                      <span><strong>Bailey:</strong> Try dining over $200 - Should be declined</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span>•</span>
+                      <span><strong>Oliver:</strong> Try entertainment over $100 - Should be declined</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span>•</span>
+                      <span>Try small purchases under limits - Should be approved</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {/* Manage Limits Tab */}
+            {activeTab === "limits" && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-2xl font-bold mb-4">Current Spending Limits</h3>
+                  <div className="space-y-3">
+                    {budgetLimits.map((limit) => (
+                      <div
+                        key={limit.controlType}
+                        className="flex items-center justify-between p-5 bg-gray-50 rounded-xl border border-gray-200"
+                      >
+                        <div>
+                          <div className="font-bold text-lg">{limit.controlType}</div>
+                          {limit.declineThreshold === 0 ? (
+                            <div className="text-sm text-red-600 font-semibold">Completely Blocked</div>
+                          ) : (
+                            <div className="text-sm text-gray-600">
+                              Alert at ${limit.alertThreshold} • Decline at ${limit.declineThreshold}
+                            </div>
+                          )}
+                        </div>
+                        <button className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-semibold hover:bg-blue-200 transition-colors">
+                          Edit
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-6 border-2 border-blue-200">
+                  <h3 className="text-2xl font-bold mb-4">Add New Limit</h3>
+                  <p className="text-gray-700 mb-6">
+                    Set spending limits for specific merchant categories. Only categories supported by your card are available.
+                  </p>
+
+                  <div className="space-y-4">
                     <div>
-                      <h3 className="font-bold text-gray-900">{limit.category}</h3>
-                      <p className="text-sm text-gray-500">Weekly limit</p>
+                      <label className="block text-sm font-semibold mb-2">Control Type</label>
+                      <select
+                        value={selectedControl}
+                        onChange={(e) => setSelectedControl(e.target.value)}
+                        className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none"
+                      >
+                        <option value="">Select a category...</option>
+                        {availableControls.map((control) => (
+                          <option key={control} value={control}>
+                            {control}
+                          </option>
+                        ))}
+                      </select>
+                      {availableControls.length === 0 && (
+                        <p className="text-sm text-gray-500 mt-2">
+                          Loading available controls for card ****{selectedUser.pan.slice(-4)}...
+                        </p>
+                      )}
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-gray-900">${limit.spent}</p>
-                    <p className="text-sm text-gray-500">of ${limit.limit}</p>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold mb-2">
+                          Alert Threshold ($)
+                        </label>
+                        <input
+                          type="number"
+                          value={newAlertThreshold}
+                          onChange={(e) => setNewAlertThreshold(e.target.value)}
+                          className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none"
+                          placeholder="100"
+                        />
+                        <p className="text-xs text-gray-600 mt-1">
+                          Get notified when spending reaches this amount
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold mb-2">
+                          Decline Threshold ($)
+                        </label>
+                        <input
+                          type="number"
+                          value={newDeclineThreshold}
+                          onChange={(e) => setNewDeclineThreshold(e.target.value)}
+                          className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none"
+                          placeholder="150"
+                        />
+                        <p className="text-xs text-gray-600 mt-1">
+                          Block transactions when spending reaches this
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      disabled={!selectedControl || loading}
+                      className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl py-4 text-lg font-bold hover:from-green-700 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
+                    >
+                      Add Spending Limit
+                    </button>
                   </div>
                 </div>
 
-                {/* Progress Bar */}
-                <div className="bg-gray-200 rounded-full h-3 overflow-hidden mb-2">
-                  <div
-                    className={`h-full rounded-full transition-all ${
-                      isNearLimit ? 'bg-blue-600' : limit.color
-                    }`}
-                    style={{ width: `${Math.min(percentage, 100)}%` }}
-                  />
-                </div>
-
-                {isNearLimit && percentage < 100 && (
-                  <p className="text-sm text-blue-700 font-semibold">
-                    ⚠️ Approaching limit - ${limit.limit - limit.spent} remaining
-                  </p>
-                )}
-                {percentage >= 100 && (
-                  <p className="text-sm text-blue-800 font-semibold">
-                    🚫 Limit reached for this week
-                  </p>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Automated Payments */}
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <Calendar className="text-blue-500" />
-          Automated Payments
-        </h2>
-        <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 overflow-hidden">
-          {autoPayments.map((payment, index) => {
-            const Icon = payment.icon;
-            return (
-              <div
-                key={payment.id}
-                className={`p-6 flex items-center justify-between hover:bg-gray-50 transition-colors ${
-                  index !== autoPayments.length - 1 ? 'border-b border-gray-100' : ''
-                }`}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="bg-blue-100 text-blue-600 rounded-full p-3">
-                    <Icon size={24} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-gray-900">{payment.name}</h3>
-                    <p className="text-sm text-gray-500">Due: {payment.dueDate}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-xl font-bold text-gray-900">${payment.amount}</p>
-                  <p className="text-sm text-green-600">Auto-pay enabled</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Recent Transactions */}
-      <div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">Recent Transactions</h2>
-        <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 overflow-hidden">
-          {transactions.map((transaction, index) => {
-            const Icon = transaction.icon;
-            const isPositive = transaction.amount > 0;
-
-            return (
-              <div
-                key={transaction.id}
-                className={`p-6 flex items-center justify-between hover:bg-gray-50 transition-colors ${
-                  index !== transactions.length - 1 ? 'border-b border-gray-100' : ''
-                }`}
-              >
-                <div className="flex items-center gap-4">
-                  <div className={`${isPositive ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'} rounded-full p-3`}>
-                    <Icon size={24} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-gray-900">{transaction.merchant}</h3>
-                    <p className="text-sm text-gray-500">{transaction.date}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className={`text-xl font-bold ${isPositive ? 'text-green-600' : 'text-gray-900'}`}>
-                    {isPositive ? `+$${transaction.amount.toFixed(2)}` : `-$${Math.abs(transaction.amount).toFixed(2)}`}
-                  </p>
-                  <p className="text-sm text-gray-500">{transaction.category}</p>
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+                  <div className="font-bold text-blue-900 mb-3">ℹ️ How Spending Limits Work</div>
+                  <ul className="text-sm text-blue-800 space-y-2">
+                    <li className="flex items-start gap-2">
+                      <span>•</span>
+                      <span><strong>Alert Threshold:</strong> You'll get a notification, but transaction still processes</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span>•</span>
+                      <span><strong>Decline Threshold:</strong> Transactions are automatically blocked at this amount</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span>•</span>
+                      <span><strong>Monthly Reset:</strong> All limits reset at the beginning of each month</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span>•</span>
+                      <span><strong>Card Support:</strong> You can only set limits for categories your specific card supports</span>
+                    </li>
+                  </ul>
                 </div>
               </div>
-            );
-          })}
+            )}
+          </div>
         </div>
       </div>
     </div>
