@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Egg, TrendingUp, MapPin, Gift, Users } from "lucide-react";
+import { Home, Egg, TrendingUp, MapPin, Gift, Users, Calendar } from "lucide-react";
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -11,6 +11,7 @@ export default function Navigation() {
     { href: "/", icon: Home, label: "Home" },
     { href: "/island", icon: Egg, label: "Island" },
     { href: "/budget", icon: TrendingUp, label: "Budget" },
+    { href: "/payments", icon: Calendar, label: "Payments" },
     { href: "/map", icon: MapPin, label: "Map" },
     { href: "/savings", icon: Gift, label: "Offers" },
     { href: "/friends", icon: Users, label: "Friends" },
