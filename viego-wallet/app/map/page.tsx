@@ -1,7 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { MapPin, Search, Coffee, ShoppingBag, Utensils, Book, Bus, Heart, CheckCircle, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { MapPin, Search, Coffee, ShoppingBag, Utensils, Book, Bus, Heart, CheckCircle, X, RefreshCw } from "lucide-react";
+import SpendingAlert from '@/components/SpendingAlert';
+import MerchantMap from "@/components/MerchantMap";
+import { getMCCCategory } from "@/lib/mccCategories";
 
 interface Merchant {
   id: number;
@@ -13,105 +16,248 @@ interface Merchant {
   icon: any;
   color: string;
   paymentMethods: string[];
+  contentId?: string;
+  terminalTypes: string[];
+  position: {
+    lat: number;
+    lng: number;
+  };
+}
+
+// Helper function to map icon string names to icon components
+function getIconComponent(iconName: string) {
+  const iconMap: Record<string, any> = {
+    'Coffee': Coffee,
+    'ShoppingBag': ShoppingBag,
+    'Utensils': Utensils,
+    'Book': Book,
+    'Bus': Bus,
+    'Heart': Heart,
+  };
+  const icon = iconMap[iconName];
+  if (!icon) {
+    console.warn(`Icon "${iconName}" not found in iconMap, using ShoppingBag as fallback`);
+    return ShoppingBag;
+  }
+  return icon;
 }
 
 export default function MapPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedMerchant, setSelectedMerchant] = useState<Merchant | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const categories = [
     { id: "all", label: "All", icon: MapPin },
     { id: "food", label: "Food", icon: Coffee },
     { id: "shopping", label: "Shopping", icon: ShoppingBag },
     { id: "dining", label: "Dining", icon: Utensils },
-    { id: "books", label: "Books", icon: Book },
+    { id: "education", label: "Education", icon: Book },
     { id: "transit", label: "Transit", icon: Bus },
+    { id: "entertainment", label: "Entertainment", icon: Heart },
+    { id: "services", label: "Services", icon: ShoppingBag },
   ];
 
-  const [merchants] = useState<Merchant[]>([
-    {
-      id: 1,
-      name: "Campus Coffee",
-      category: "food",
-      distance: "0.2 mi",
-      address: "123 University Ave",
-      acceptsViego: true,
-      icon: Coffee,
-      color: "bg-orange-500",
-      paymentMethods: ["Visa", "Mastercard", "Viego Card"],
-    },
-    {
-      id: 2,
-      name: "Student Bookstore",
-      category: "books",
-      distance: "0.3 mi",
-      address: "45 Campus Dr",
-      acceptsViego: true,
-      icon: Book,
-      color: "bg-blue-500",
-      paymentMethods: ["Visa", "Mastercard", "Viego Card", "Apple Pay"],
-    },
-    {
-      id: 3,
-      name: "Pizza Palace",
-      category: "dining",
-      distance: "0.5 mi",
-      address: "789 College Blvd",
-      acceptsViego: true,
-      icon: Utensils,
-      color: "bg-red-500",
-      paymentMethods: ["Visa", "Mastercard", "Viego Card"],
-    },
-    {
-      id: 4,
-      name: "Campus Transit Hub",
-      category: "transit",
-      distance: "0.1 mi",
-      address: "1 Transit Center",
-      acceptsViego: true,
-      icon: Bus,
-      color: "bg-green-500",
-      paymentMethods: ["Viego Card", "Transit Pass"],
-    },
-    {
-      id: 5,
-      name: "Fashion Boutique",
-      category: "shopping",
-      distance: "0.8 mi",
-      address: "234 Downtown St",
-      acceptsViego: false,
-      icon: ShoppingBag,
-      color: "bg-pink-500",
-      paymentMethods: ["Visa", "Mastercard"],
-    },
-    {
-      id: 6,
-      name: "Healthy Bites Cafe",
-      category: "food",
-      distance: "0.4 mi",
-      address: "567 Health Way",
-      acceptsViego: true,
-      icon: Heart,
-      color: "bg-green-500",
-      paymentMethods: ["Visa", "Mastercard", "Viego Card", "Apple Pay"],
-    },
-  ]);
+  const [realMerchants, setRealMerchants] = useState<Merchant[]>([]);
 
-  const filteredMerchants = merchants.filter((merchant) => {
+  // Fetch real merchant data from Visa API
+  const fetchRealMerchants = async (category?: string) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const transformMerchant = (m: any, index: number): Merchant => {
+        // Normalize MCC codes to always be an array
+        const mccCodes = Array.isArray(m.merchantCategoryCode)
+          ? m.merchantCategoryCode
+          : m.merchantCategoryCode
+            ? [m.merchantCategoryCode]
+            : [];
+
+        // Get category info based on MCC codes
+        const categoryInfo = getMCCCategory(mccCodes);
+        const IconComponent = getIconComponent(categoryInfo.icon);
+
+        // Map terminal type values to friendly names
+        const terminalTypes: string[] = [];
+        if (m.terminalType) {
+          const types = Array.isArray(m.terminalType) ? m.terminalType : [m.terminalType];
+          types.forEach((type: string) => {
+            if (type.toLowerCase().includes('swipe') || type.toLowerCase().includes('magnetic')) {
+              terminalTypes.push('Swipe');
+            }
+            if (type.toLowerCase().includes('chip') || type.toLowerCase().includes('emv')) {
+              terminalTypes.push('Chip');
+            }
+            if (type.toLowerCase().includes('contactless') || type.toLowerCase().includes('nfc') || type.toLowerCase().includes('tap')) {
+              terminalTypes.push('Contactless');
+            }
+          });
+        }
+
+        // Default terminal types if none found
+        if (terminalTypes.length === 0) {
+          terminalTypes.push('Chip', 'Contactless');
+        }
+
+        // Parse and validate coordinates
+        const lat = parseFloat(m.locationAddressLatitude);
+        const lng = parseFloat(m.locationAddressLongitude);
+        const validLat = !isNaN(lat) ? lat : 37.8715;
+        const validLng = !isNaN(lng) ? lng : -122.2730;
+
+        const merchant = {
+          id: index + 1,
+          name: m.visaStoreName || m.visaMerchantName || 'Unknown Merchant',
+          category: categoryInfo.category,
+          distance: m.distance || 'N/A',
+          address: m.merchantStreetAddress || `${m.merchantCity}, ${m.merchantState}`,
+          acceptsViego: true,
+          icon: IconComponent,
+          color: categoryInfo.color,
+          terminalTypes: Array.from(new Set(terminalTypes)),
+          position: {
+            lat: validLat,
+            lng: validLng,
+          },
+        };
+
+        // Enhanced logging for debugging
+        console.log(`[Merchant ${index + 1}] ${merchant.name}:`, {
+          mccCodes: mccCodes.join(', ') || 'none',
+          category: merchant.category,
+          icon: categoryInfo.icon,
+          position: `${validLat}, ${validLng}`,
+          hasValidPosition: !isNaN(lat) && !isNaN(lng)
+        });
+
+        return merchant;
+      };
+
+      // If "all" category, fetch until we have 25 merchants total
+      if (!category || category === 'all') {
+        console.log('=== Fetching merchants for "All" category ===');
+        const allMerchants: Merchant[] = [];
+        let startIndex = 0;
+        const maxAttempts = 5; // Increased to get more merchants
+        let attempts = 0;
+
+        while (allMerchants.length < 25 && attempts < maxAttempts) {
+          console.log(`Attempt ${attempts + 1}: Fetching from startIndex ${startIndex}...`);
+          const response = await fetch(
+            `/api/merchants?latitude=37.871966&longitude=-122.259960&distance=5&maxRecords=25&startIndex=${startIndex}`
+          );
+          const data = await response.json();
+
+          if (!data.success || !data.merchants || data.merchants.length === 0) {
+            console.log(`No more merchants returned (success: ${data.success}, count: ${data.merchants?.length || 0})`);
+            break; // No more merchants available
+          }
+
+          console.log(`Received ${data.merchants.length} merchants from API`);
+          const batch = data.merchants.map((m: any, idx: number) => {
+            return transformMerchant(m, allMerchants.length + idx);
+          });
+          allMerchants.push(...batch);
+          console.log(`Total accumulated: ${allMerchants.length} merchants`);
+
+          startIndex += 25;
+          attempts++;
+
+          // If we got fewer than 25 merchants in this batch, we've reached the end
+          if (data.merchants.length < 25) {
+            console.log(`Received fewer than 25 merchants, reached end of results`);
+            break;
+          }
+        }
+
+        console.log(`=== SUMMARY: Fetched ${allMerchants.length} total merchants for "All" ===`);
+        console.log('Category breakdown:', allMerchants.reduce((acc, m) => {
+          acc[m.category] = (acc[m.category] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>));
+
+        // Take exactly 25 merchants
+        const merchantsToDisplay = allMerchants.slice(0, 25);
+        console.log(`Setting ${merchantsToDisplay.length} merchants to display`);
+        setRealMerchants(merchantsToDisplay);
+      } else {
+        // For specific category, fetch in batches until we have 25 of that category
+        console.log(`=== Fetching merchants for "${category}" category ===`);
+        const categoryMerchants: Merchant[] = [];
+        let startIndex = 0;
+        const maxAttempts = 10; // Limit to prevent infinite loops
+        let attempts = 0;
+
+        while (categoryMerchants.length < 25 && attempts < maxAttempts) {
+          console.log(`Attempt ${attempts + 1}: Fetching from startIndex ${startIndex}...`);
+          const response = await fetch(
+            `/api/merchants?latitude=37.871966&longitude=-122.259960&distance=5&maxRecords=25&startIndex=${startIndex}`
+          );
+          const data = await response.json();
+
+          if (!data.success || !data.merchants || data.merchants.length === 0) {
+            console.log(`No more merchants returned (success: ${data.success}, count: ${data.merchants?.length || 0})`);
+            break; // No more merchants available
+          }
+
+          console.log(`Received ${data.merchants.length} merchants from API`);
+          // Transform and filter by category
+          const batch = data.merchants
+            .map((m: any, idx: number) => transformMerchant(m, startIndex + idx))
+            .filter((m: Merchant) => m.category === category);
+
+          console.log(`${batch.length} merchants matched "${category}" category`);
+          categoryMerchants.push(...batch);
+          console.log(`Total accumulated for "${category}": ${categoryMerchants.length} merchants`);
+
+          startIndex += 25;
+          attempts++;
+
+          // If we got fewer than 25 merchants in this batch, we've reached the end
+          if (data.merchants.length < 25) {
+            console.log(`Received fewer than 25 merchants, reached end of results`);
+            break;
+          }
+        }
+
+        console.log(`=== SUMMARY: Fetched ${categoryMerchants.length} merchants for "${category}" ===`);
+        // Take only the first 25 merchants of the selected category
+        const merchantsToDisplay = categoryMerchants.slice(0, 25);
+        console.log(`Setting ${merchantsToDisplay.length} merchants to display`);
+        setRealMerchants(merchantsToDisplay);
+      }
+    } catch (err) {
+      setError('Failed to connect to Visa API');
+      console.error('Fetch error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Auto-load real merchant data on page load and when category changes
+  useEffect(() => {
+    fetchRealMerchants(selectedCategory);
+  }, [selectedCategory]);
+
+  // Use real merchant data
+  const displayMerchants = realMerchants;
+
+  const filteredMerchants = displayMerchants.filter((merchant) => {
     const matchesSearch = merchant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          merchant.address.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === "all" || merchant.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const viegoAcceptedCount = merchants.filter(m => m.acceptsViego).length;
-
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-900 mb-2">Merchant Map</h1>
-        <p className="text-gray-600">Find nearby student essentials and see where your Viego card is accepted</p>
+        <p className="text-gray-600">Find nearby merchants and student essentials</p>
       </div>
 
       {/* Stats Banner */}
@@ -119,19 +265,32 @@ export default function MapPage() {
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-3">
             <div className="bg-white/20 rounded-full p-3">
-              <CheckCircle size={32} />
+              <MapPin size={32} />
             </div>
             <div>
-              <h3 className="text-2xl font-bold">{viegoAcceptedCount} Locations Near You</h3>
-              <p className="text-white/90">Accept Viego Card payments</p>
+              <h3 className="text-2xl font-bold">{displayMerchants.length} Merchants Near You</h3>
+              <p className="text-white/90">Within 5 miles of Berkeley, CA</p>
             </div>
           </div>
           <div className="text-right">
-            <p className="text-3xl font-bold">{merchants.length}</p>
-            <p className="text-white/90">Total merchants</p>
+            <p className="text-3xl font-bold">{filteredMerchants.length}</p>
+            <p className="text-white/90">Currently showing</p>
           </div>
         </div>
       </div>
+
+      {/* Loading/Error Status */}
+      {isLoading && (
+        <div className="mb-6 flex items-center justify-center bg-blue-50 p-4 rounded-xl shadow-md">
+          <RefreshCw size={20} className="inline animate-spin mr-2 text-blue-600" />
+          <span className="text-blue-700 font-semibold">Loading merchants from Visa API...</span>
+        </div>
+      )}
+      {error && (
+        <div className="mb-6 bg-red-50 border-2 border-red-200 p-4 rounded-xl shadow-md">
+          <p className="text-red-600 font-semibold">{error}</p>
+        </div>
+      )}
 
       {/* Search Bar */}
       <div className="mb-6">
@@ -168,21 +327,13 @@ export default function MapPage() {
         })}
       </div>
 
-      {/* Map Placeholder */}
-      <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl p-8 mb-8 min-h-[300px] shadow-lg border-4 border-white relative overflow-hidden">
-        <div className="text-center">
-          <MapPin className="mx-auto text-blue-500 mb-4" size={64} />
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">Interactive Map</h3>
-          <p className="text-gray-600 mb-4">Google Maps integration will show merchant locations here</p>
-          <div className="inline-block bg-white px-6 py-3 rounded-full shadow-md">
-            <p className="text-sm font-semibold text-gray-700">📍 Current Location: Campus Center</p>
-          </div>
-        </div>
-
-        {/* Map pins visualization */}
-        <div className="absolute top-20 left-1/4 text-3xl animate-bounce">📍</div>
-        <div className="absolute bottom-20 right-1/3 text-3xl animate-pulse">📍</div>
-        <div className="absolute top-1/3 right-1/4 text-3xl">📍</div>
+      {/* Google Maps */}
+      <div className="mb-8">
+        <MerchantMap
+          merchants={filteredMerchants}
+          center={{ lat: 37.8715, lng: -122.2730 }}
+          zoom={14}
+        />
       </div>
 
       {/* Merchant List */}
@@ -207,9 +358,7 @@ export default function MapPage() {
               return (
                 <div
                   key={merchant.id}
-                  className={`bg-white rounded-2xl p-6 shadow-lg border-2 transition-all hover:shadow-xl cursor-pointer ${
-                    merchant.acceptsViego ? 'border-green-200 hover:border-green-400' : 'border-gray-200'
-                  }`}
+                  className="bg-white rounded-2xl p-6 shadow-lg border-2 border-gray-200 hover:border-blue-300 transition-all hover:shadow-xl cursor-pointer"
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
@@ -226,40 +375,35 @@ export default function MapPage() {
                     </div>
                   </div>
 
-                  {/* Viego Acceptance Badge */}
-                  {merchant.acceptsViego ? (
-                    <div className="bg-green-50 border-2 border-green-200 rounded-xl p-3 mb-3">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="text-green-600" size={20} />
-                        <span className="font-semibold text-green-700">Accepts Viego Card</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="bg-gray-50 border-2 border-gray-200 rounded-xl p-3 mb-3">
-                      <div className="flex items-center gap-2">
-                        <X className="text-gray-400" size={20} />
-                        <span className="font-semibold text-gray-600">Viego Card not accepted</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Payment Methods */}
+                  {/* Terminal Types */}
                   <div>
-                    <p className="text-sm text-gray-600 mb-2">Accepted payments:</p>
+                    <p className="text-sm text-gray-600 mb-2">Terminal types:</p>
                     <div className="flex flex-wrap gap-2">
-                      {merchant.paymentMethods.map((method) => (
+                      {merchant.terminalTypes.map((type) => (
                         <span
-                          key={method}
+                          key={type}
                           className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                            method === "Viego Card"
+                            type === "Contactless"
                               ? 'bg-blue-100 text-blue-700'
+                              : type === "Chip"
+                              ? 'bg-green-100 text-green-700'
                               : 'bg-gray-100 text-gray-700'
                           }`}
                         >
-                          {method}
+                          {type}
                         </span>
                       ))}
                     </div>
+                  </div>
+
+                  {/* Offers & spending check button */}
+                  <div className="mt-4">
+                    <button
+                      onClick={() => setSelectedMerchant(merchant)}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700"
+                    >
+                      Check offers & limits
+                    </button>
                   </div>
                 </div>
               );
@@ -267,6 +411,11 @@ export default function MapPage() {
           </div>
         )}
       </div>
+      {selectedMerchant && (
+        <div className="mt-6">
+          <SpendingAlert merchant={selectedMerchant} onClose={() => setSelectedMerchant(null)} />
+        </div>
+      )}
     </div>
   );
 }

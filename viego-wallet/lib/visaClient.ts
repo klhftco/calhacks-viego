@@ -64,6 +64,9 @@ export async function makeVisaApiCall<T>(options: VisaApiOptions): Promise<T> {
 
   const url = new URL(endpoint, VISA_BASE_URL);
 
+  // Generate unique message ID for this request
+  const messageId = `${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+
   // Log for debugging
   console.log('📤 Visa API Request:', {
     method,

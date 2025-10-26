@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@vis.gl/react-google-maps": "^1.6.1",
     "lucide-react": "^0.263.1",
     "mongoose": "^8.19.2",
     "next": "^15.0.0",
