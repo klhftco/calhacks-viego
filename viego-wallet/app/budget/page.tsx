@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { DollarSign, TrendingUp, Bell, Calendar, CreditCard, RefreshCw } from "lucide-react";
+import { DollarSign, TrendingUp, TrendingDown, Bell, Calendar, CreditCard, ShoppingBag, Coffee, Bus, Home, RefreshCw } from "lucide-react";
+import DonutChart from "@/components/DonutChart";
 
 type User = {
   userIdentifier: string;
@@ -63,6 +64,12 @@ const MOCK_TRANSACTIONS = {
 };
 
 export default function BudgetPage() {
+  const [spendingLimits] = useState<SpendingLimit[]>([
+    { id: 1, category: "Food & Dining", icon: Coffee, limit: 200, spent: 145, color: "#22c55e" }, // green-500
+    { id: 2, category: "Shopping", icon: ShoppingBag, limit: 150, spent: 89, color: "#06b6d4" }, // cyan-500
+    { id: 3, category: "Transportation", icon: Bus, limit: 100, spent: 42, color: "#3b82f6" }, // blue-500
+    { id: 4, category: "Housing", icon: Home, limit: 800, spent: 800, color: "#10b981" }, // emerald-500
+  ]);
   const [selectedUser, setSelectedUser] = useState<User>(USERS[0]);
   const [activeTab, setActiveTab] = useState<"overview" | "simulate" | "limits">("overview");
   const [alerts, setAlerts] = useState<Alert[]>([]);

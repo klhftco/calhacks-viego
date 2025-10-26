@@ -7,13 +7,13 @@ import { Home, Egg, TrendingUp, MapPin, Gift, Users, Calendar } from "lucide-rea
 export default function Navigation() {
   const pathname = usePathname();
 
+  // Exactly 5 buttons in order: Island, Budget, Home, Map, Friends
   const navItems = [
-    { href: "/", icon: Home, label: "Home" },
     { href: "/island", icon: Egg, label: "Island" },
     { href: "/budget", icon: TrendingUp, label: "Budget" },
+    { href: "/", icon: Home, label: "Home" },
     { href: "/payments", icon: Calendar, label: "Payments" },
     { href: "/map", icon: MapPin, label: "Map" },
-    { href: "/savings", icon: Gift, label: "Offers" },
     { href: "/friends", icon: Users, label: "Friends" },
   ];
 

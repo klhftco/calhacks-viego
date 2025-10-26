@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { Egg, Sparkles, Trophy, TrendingUp, Star } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useIsland } from "@/context/IslandContext";
+import { Egg, Sparkles, Trophy, TrendingUp, Star, Plus } from "lucide-react";
 
 interface Monster {
   id: number;
@@ -10,6 +11,7 @@ interface Monster {
   level: number;
   emoji: string;
   color: string;
+  traits: string[];
 }
 
 interface EggProgress {
@@ -21,16 +23,58 @@ interface EggProgress {
 }
 
 export default function IslandPage() {
-  const [monsters] = useState<Monster[]>([
-    { id: 1, name: "Sparkle", type: "Starter", level: 5, emoji: "🦖", color: "bg-green-500" },
-    { id: 2, name: "Goldie", type: "Savings Master", level: 3, emoji: "🐉", color: "bg-yellow-500" },
-    { id: 3, name: "Bluey", type: "Budget Beast", level: 2, emoji: "🦕", color: "bg-blue-500" },
-  ]);
+  const { monsters, level: islandLevel, currentXP, goalXP, setXP } = useIsland();
 
   const [eggProgress] = useState<EggProgress[]>([
     { id: 1, progress: 65, goalAmount: 500, currentAmount: 325, emoji: "🥚" },
     { id: 2, progress: 30, goalAmount: 1000, currentAmount: 300, emoji: "🥚" },
   ]);
+
+  const islandPercent = Math.min(100, Math.round((currentXP / goalXP) * 100));
+
+  // roaming positions for monsters (in percentages inside the landscape)
+  const [positions, setPositions] = useState<Record<number, { x: number; y: number }>>(() => {
+    const initial: Record<number, { x: number; y: number }> = {};
+    for (const m of monsters) {
+      initial[m.id] = { x: 20 + Math.random() * 60, y: 25 + Math.random() * 50 };
+    }
+    return initial;
+  });
+
+  // per-monster meta for speed, scale, and wobble timings
+  const meta = useMemo(() => {
+    const map: Record<number, { speed: number; scale: number; wobbleDur: number; wobbleDelay: number }> = {};
+    for (const m of monsters) {
+      map[m.id] = {
+        speed: 1.4 - Math.random() * 0.8, // 0.6..1.4s base multiplier
+        scale: 0.9 + Math.random() * 0.5, // 0.9..1.4 scale
+        wobbleDur: 1.2 + Math.random() * 1.2, // 1.2..2.4s
+        wobbleDelay: Math.random() * 1.0, // 0..1s
+      };
+    }
+    return map;
+  }, [monsters]);
+
+  // (removed grass particles per request)
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setPositions((prev) => {
+        const next: Record<number, { x: number; y: number }> = {};
+        for (const m of monsters) {
+          const p = prev[m.id] || { x: 50, y: 50 };
+          // wander a little each tick
+          const dx = (Math.random() - 0.5) * 14; // +/- 7%
+          const dy = (Math.random() - 0.5) * 10; // +/- 5%
+          const x = Math.max(8, Math.min(92, p.x + dx));
+          const y = Math.max(18, Math.min(82, p.y + dy));
+          next[m.id] = { x, y };
+        }
+        return next;
+      });
+    }, 2500);
+    return () => clearInterval(id);
+  }, [monsters]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -41,7 +85,7 @@ export default function IslandPage() {
       </div>
 
       {/* Streak & Achievement Banner */}
-      <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-6 mb-8 text-white shadow-lg">
+      <div className="bg-gradient-to-r from-blue-500 to-green-500 rounded-2xl p-6 mb-8 text-white shadow-lg">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-3">
             <div className="bg-white/20 rounded-full p-3">
@@ -59,48 +103,103 @@ export default function IslandPage() {
         </div>
       </div>
 
-      {/* Island Area with Monsters */}
-      <div className="bg-gradient-to-br from-green-100 via-blue-100 to-purple-100 rounded-3xl p-8 mb-8 min-h-[400px] shadow-lg border-4 border-white relative overflow-hidden">
+      {/* Isometric Grassy Plains with roaming monsters */}
+      <div className="rounded-3xl p-8 mb-8 min-h-[420px] shadow-lg border-4 border-white relative overflow-hidden bg-gradient-to-br from-green-200 to-blue-200">
+        {/* faux isometric grid */}
+        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "linear-gradient(135deg, rgba(255,255,255,0.2) 25%, transparent 25%), linear-gradient(225deg, rgba(255,255,255,0.2) 25%, transparent 25%), linear-gradient(45deg, rgba(255,255,255,0.2) 25%, transparent 25%), linear-gradient(315deg, rgba(255,255,255,0.2) 25%, rgba(255,255,255,0) 25%)", backgroundSize: '40px 40px', backgroundPosition: '0 0, 0 20px, 20px -20px, -20px 0' }} />
         <div className="absolute top-4 left-4 bg-white/90 rounded-full px-4 py-2 shadow-md">
           <span className="font-semibold text-gray-700">🏝️ Viego Island</span>
         </div>
 
-        {/* Monsters roaming */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-8 mt-16">
-          {monsters.map((monster, index) => (
-            <div
-              key={monster.id}
-              className={`bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer transform hover:-translate-y-2 ${
-                index % 2 === 0 ? 'mt-8' : ''
-              }`}
-            >
-              <div className="text-6xl mb-3 text-center">{monster.emoji}</div>
-              <h3 className="text-xl font-bold text-gray-900 text-center">{monster.name}</h3>
-              <p className="text-sm text-gray-600 text-center mb-2">{monster.type}</p>
-              <div className="flex items-center justify-center gap-2">
-                <div className={`${monster.color} text-white px-3 py-1 rounded-full text-sm font-semibold`}>
-                  Lv. {monster.level}
-                </div>
-              </div>
+        {/* Central big tree with XP bar */}
+        <div className="absolute select-none" style={{ left: '50%', top: '46%', transform: 'translate(-50%, -50%)', zIndex: 300 }}>
+          <div
+            className="leading-none text-center drop-shadow"
+            style={{
+              display: 'inline-block',
+              animation: 'treeSway 3.6s ease-in-out 0.4s infinite alternate',
+              transformOrigin: '50% 90%'
+            }}
+          >
+            <span className="block text-[7rem] md:text-[9rem]">🌳</span>
+          </div>
+          <div className="mt-2 bg-white/90 backdrop-blur-sm rounded-xl shadow border border-green-100 px-3 py-2">
+            <div className="flex items-center justify-between text-xs text-gray-600">
+              <span className="font-semibold text-green-700">Island Lv. {islandLevel}</span>
+              <span className="font-medium text-gray-700">{currentXP}/{goalXP}</span>
             </div>
-          ))}
+            <div className="mt-1 h-2.5 rounded-full bg-gray-200 overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-green-500 to-blue-500 rounded-full" style={{ width: `${islandPercent}%` }} />
+            </div>
+            <div className="mt-2 text-center">
+              <button
+                onClick={() => setXP(currentXP + 50)}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700"
+              >
+                <Plus size={14} /> Gain 50 XP
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Decorative elements */}
-        <div className="absolute bottom-4 right-4 text-4xl animate-bounce">🌴</div>
-        <div className="absolute bottom-8 left-8 text-3xl">🌺</div>
-        <div className="absolute top-1/3 right-1/4 text-2xl">☁️</div>
+        {/* roaming monsters */}
+        {monsters.map((m) => {
+          const p = positions[m.id] || { x: 50, y: 50 };
+          const mmeta = meta[m.id] || { speed: 1, scale: 1, wobbleDur: 1.5, wobbleDelay: 0 };
+          return (
+            <div
+              key={m.id}
+              className="absolute select-none"
+              style={{
+                left: `${p.x}%`,
+                top: `${p.y}%`,
+                transform: 'translate(-50%, -50%)',
+                transition: `left ${1.8 * mmeta.speed}s ease, top ${1.8 * mmeta.speed}s ease`,
+                zIndex: 100 + Math.round(p.y),
+              }}
+              title={`Traits: ${m.traits.join(', ')}`}
+            >
+              <div
+                className="text-5xl drop-shadow-sm leading-none text-center"
+                style={{
+                  transform: `scale(${mmeta.scale})`,
+                  animation: `wobble ${mmeta.wobbleDur}s ease-in-out ${mmeta.wobbleDelay}s infinite alternate`,
+                  display: 'inline-block',
+                }}
+              >
+                {m.emoji}
+              </div>
+              <div className="mt-1 mx-auto w-max">
+                <span className={`${m.color} text-white px-2 py-0.5 rounded-full text-xs font-semibold`}>Lv. {m.level}</span>
+              </div>
+              <div className="text-[10px] text-gray-700 text-center mt-1 font-medium">{m.name}</div>
+            </div>
+          );
+        })}
+
+        <style jsx>{`
+          @keyframes wobble {
+            0% { transform: translateY(0) scale(1); }
+            100% { transform: translateY(-4px) scale(1.02); }
+          }
+          @keyframes treeSway {
+            0% { transform: rotate(-2deg); }
+            100% { transform: rotate(2deg); }
+          }
+        `}</style>
+
+        {/* Decorative elements removed per request */}
       </div>
 
       {/* Egg Hatching Progress */}
       <div className="mb-8">
         <h2 className="text-3xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <Egg className="text-purple-500" />
+          <Egg className="text-blue-600" />
           Eggs Hatching
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {eggProgress.map((egg) => (
-            <div key={egg.id} className="bg-white rounded-2xl p-6 shadow-lg border-2 border-purple-200">
+            <div key={egg.id} className="bg-white rounded-2xl p-6 shadow-lg border-2 border-blue-200">
               <div className="flex items-center justify-between mb-4">
                 <div className="text-5xl">{egg.emoji}</div>
                 <div className="text-right">
@@ -112,18 +211,18 @@ export default function IslandPage() {
               {/* Progress Bar */}
               <div className="bg-gray-200 rounded-full h-4 mb-3 overflow-hidden">
                 <div
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 h-full rounded-full transition-all duration-500"
+                  className="bg-gradient-to-r from-blue-500 to-green-500 h-full rounded-full transition-all duration-500"
                   style={{ width: `${egg.progress}%` }}
                 />
               </div>
 
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Goal: ${egg.goalAmount}</span>
-                <span className="text-purple-600 font-semibold">${egg.currentAmount} saved</span>
+                <span className="text-blue-700 font-semibold">${egg.currentAmount} saved</span>
               </div>
 
               {egg.progress >= 50 && (
-                <div className="mt-3 flex items-center gap-2 text-purple-600">
+                <div className="mt-3 flex items-center gap-2 text-blue-700">
                   <Sparkles size={16} />
                   <span className="text-sm font-semibold">Almost there! Keep saving!</span>
                 </div>
@@ -133,27 +232,30 @@ export default function IslandPage() {
         </div>
       </div>
 
-      {/* Achievements Section */}
+      {/* Achievements Section (round medals style) */}
       <div>
         <h2 className="text-3xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <Trophy className="text-yellow-500" />
+          <Trophy className="text-green-600" />
           Recent Achievements
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl p-4 text-white shadow-lg">
-            <div className="text-3xl mb-2">🏆</div>
-            <h4 className="font-bold mb-1">Budget Master</h4>
-            <p className="text-sm text-white/90">Stayed under budget for 2 weeks</p>
+        <div className="grid grid-cols-3 gap-4">
+          {/* Medal 1 */}
+          <div className="flex flex-col items-center">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-green-500 shadow-lg ring-4 ring-white flex items-center justify-center text-3xl">🏆</div>
+            <div className="mt-2 text-sm font-semibold text-gray-900">Budget Master</div>
+            <div className="text-xs text-gray-600">2 weeks under budget</div>
           </div>
-          <div className="bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl p-4 text-white shadow-lg">
-            <div className="text-3xl mb-2">💰</div>
-            <h4 className="font-bold mb-1">Savings Streak</h4>
-            <p className="text-sm text-white/90">14 consecutive days of saving</p>
+          {/* Medal 2 */}
+          <div className="flex flex-col items-center">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-teal-400 to-emerald-500 shadow-lg ring-4 ring-white flex items-center justify-center text-3xl">💰</div>
+            <div className="mt-2 text-sm font-semibold text-gray-900">Savings Streak</div>
+            <div className="text-xs text-gray-600">14 day streak</div>
           </div>
-          <div className="bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl p-4 text-white shadow-lg">
-            <div className="text-3xl mb-2">🌱</div>
-            <h4 className="font-bold mb-1">First Monster</h4>
-            <p className="text-sm text-white/90">Hatched your starter monster!</p>
+          {/* Medal 3 */}
+          <div className="flex flex-col items-center">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-sky-400 to-green-400 shadow-lg ring-4 ring-white flex items-center justify-center text-3xl">🌱</div>
+            <div className="mt-2 text-sm font-semibold text-gray-900">First Monster</div>
+            <div className="text-xs text-gray-600">Starter hatched</div>
           </div>
         </div>
       </div>

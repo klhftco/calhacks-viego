@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MapPin, Search, Coffee, ShoppingBag, Utensils, Book, Bus, Heart, X, RefreshCw } from "lucide-react";
+import { MapPin, Search, Coffee, ShoppingBag, Utensils, Book, Bus, Heart, CheckCircle, X, RefreshCw } from "lucide-react";
+import SpendingAlert from '@/components/SpendingAlert';
 import MerchantMap from "@/components/MerchantMap";
 import { getMCCCategory } from "@/lib/mccCategories";
 
@@ -14,6 +15,8 @@ interface Merchant {
   acceptsViego: boolean;
   icon: any;
   color: string;
+  paymentMethods: string[];
+  contentId?: string;
   terminalTypes: string[];
   position: {
     lat: number;
@@ -42,6 +45,7 @@ function getIconComponent(iconName: string) {
 export default function MapPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedMerchant, setSelectedMerchant] = useState<Merchant | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -391,12 +395,27 @@ export default function MapPage() {
                       ))}
                     </div>
                   </div>
+
+                  {/* Offers & spending check button */}
+                  <div className="mt-4">
+                    <button
+                      onClick={() => setSelectedMerchant(merchant)}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700"
+                    >
+                      Check offers & limits
+                    </button>
+                  </div>
                 </div>
               );
             })}
           </div>
         )}
       </div>
+      {selectedMerchant && (
+        <div className="mt-6">
+          <SpendingAlert merchant={selectedMerchant} onClose={() => setSelectedMerchant(null)} />
+        </div>
+      )}
     </div>
   );
 }

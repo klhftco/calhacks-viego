@@ -42,7 +42,7 @@ export default function SavingsPage() {
       isActive: true,
       timesUsed: 3,
       maxUses: 10,
-      color: "bg-orange-500",
+      color: "bg-teal-500",
     },
     {
       id: 2,
@@ -68,7 +68,7 @@ export default function SavingsPage() {
       isActive: true,
       timesUsed: 5,
       maxUses: 999,
-      color: "bg-red-500",
+      color: "bg-emerald-500",
     },
     {
       id: 4,
@@ -94,7 +94,7 @@ export default function SavingsPage() {
       isActive: true,
       timesUsed: 0,
       maxUses: 1,
-      color: "bg-purple-500",
+      color: "bg-teal-600",
     },
     {
       id: 6,
@@ -107,7 +107,7 @@ export default function SavingsPage() {
       isActive: true,
       timesUsed: 0,
       maxUses: 1,
-      color: "bg-indigo-500",
+      color: "bg-sky-500",
     },
   ]);
 
@@ -136,7 +136,7 @@ export default function SavingsPage() {
           <p className="text-white/90 text-sm mt-2">in savings</p>
         </div>
 
-        <div className="bg-gradient-to-br from-blue-400 to-indigo-500 rounded-2xl p-6 shadow-lg text-white">
+        <div className="bg-gradient-to-br from-blue-400 to-teal-500 rounded-2xl p-6 shadow-lg text-white">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-lg font-semibold">All Time</h3>
             <Star size={24} />
@@ -145,7 +145,7 @@ export default function SavingsPage() {
           <p className="text-white/90 text-sm mt-2">total saved</p>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-400 to-pink-500 rounded-2xl p-6 shadow-lg text-white">
+        <div className="bg-gradient-to-br from-green-400 to-emerald-500 rounded-2xl p-6 shadow-lg text-white">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-lg font-semibold">Active Offers</h3>
             <Gift size={24} />
@@ -156,7 +156,7 @@ export default function SavingsPage() {
       </div>
 
       {/* Auto-Apply Banner */}
-      <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl p-6 mb-8 text-white shadow-lg">
+      <div className="bg-gradient-to-r from-blue-500 to-green-500 rounded-2xl p-6 mb-8 text-white shadow-lg">
         <div className="flex items-start gap-4">
           <div className="bg-white/20 rounded-full p-3 mt-1">
             <CheckCircle size={24} />
@@ -164,7 +164,7 @@ export default function SavingsPage() {
           <div>
             <h3 className="text-xl font-bold mb-2">Auto-Apply is ON</h3>
             <p className="text-white/90 text-lg">
-              We'll automatically apply the best available offers when you make purchases at participating merchants.
+              We&#39;ll automatically apply the best available offers when you make purchases at participating merchants.
               No codes needed!
             </p>
           </div>
@@ -175,14 +175,14 @@ export default function SavingsPage() {
       {expiringSoon.length > 0 && (
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <Clock className="text-red-500" />
+            <Clock className="text-blue-600" />
             Expiring Soon
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {expiringSoon.map((offer) => (
               <div
                 key={offer.id}
-                className="bg-white rounded-2xl p-6 shadow-lg border-2 border-red-200 hover:shadow-xl transition-all"
+                className="bg-white rounded-2xl p-6 shadow-lg border-2 border-blue-200 hover:shadow-xl transition-all"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
@@ -190,7 +190,7 @@ export default function SavingsPage() {
                       <span className={`${offer.color} text-white px-3 py-1 rounded-full text-xs font-bold`}>
                         {offer.discount}
                       </span>
-                      <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                      <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
                         <Clock size={12} />
                         {offer.expiresIn}
                       </span>
@@ -215,7 +215,7 @@ export default function SavingsPage() {
       {/* All Active Offers */}
       <div>
         <h2 className="text-3xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <Tag className="text-purple-500" />
+          <Tag className="text-blue-600" />
           All Available Offers
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -227,7 +227,7 @@ export default function SavingsPage() {
               <div
                 key={offer.id}
                 className={`bg-white rounded-2xl p-6 shadow-lg border-2 hover:shadow-xl transition-all ${
-                  isExpiringSoon ? 'border-red-200' : 'border-gray-100'
+                  isExpiringSoon ? 'border-blue-200' : 'border-gray-100'
                 }`}
               >
                 {/* Discount Badge */}
@@ -244,7 +244,7 @@ export default function SavingsPage() {
                 <p className="text-gray-700 mb-4 text-sm">{offer.description}</p>
 
                 {/* Expiration */}
-                <div className={`flex items-center gap-2 mb-3 ${isExpiringSoon ? 'text-red-600' : 'text-gray-600'}`}>
+                <div className={`flex items-center gap-2 mb-3 ${isExpiringSoon ? 'text-blue-700' : 'text-gray-600'}`}>
                   <Clock size={16} />
                   <span className="text-sm font-semibold">Expires in {offer.expiresIn}</span>
                 </div>
