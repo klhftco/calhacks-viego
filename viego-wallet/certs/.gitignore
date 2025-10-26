@@ -1,0 +1,3 @@
+# Ignore all certificate files for security
+*
+!.gitignore
