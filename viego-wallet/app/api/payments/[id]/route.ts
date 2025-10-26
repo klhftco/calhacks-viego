@@ -7,10 +7,11 @@ import { getPaymentById, updatePayment } from '@/lib/storage';
  */
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const payment = getPaymentById(params.id);
+    const { id } = await params;
+    const payment = getPaymentById(id);
 
     if (!payment) {
       return NextResponse.json(
@@ -38,9 +39,10 @@ export async function GET(
  */
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { status, lastPaidDate } = body;
 
@@ -53,7 +55,7 @@ export async function PATCH(
       updates.lastPaidDate = new Date().toISOString();
     }
 
-    const updatedPayment = updatePayment(params.id, updates);
+    const updatedPayment = updatePayment(id, updates);
 
     if (!updatedPayment) {
       return NextResponse.json(

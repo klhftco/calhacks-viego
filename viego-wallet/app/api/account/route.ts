@@ -35,15 +35,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    let user;
+    let user: any;
 
     if (viegoUID) {
       // Retrieve by Viego UID
-      user = await User.findOne({ viegoUID })
+      user = await (User as any).findOne({ viegoUID })
         .lean();
     } else if (email) {
       // Find by email
-      user = await User.findOne({ email: email.toLowerCase() })
+      user = await (User as any).findOne({ email: email.toLowerCase() })
         .lean();
     }
 
@@ -58,25 +58,26 @@ export async function GET(request: NextRequest) {
     }
 
     // Convert MongoDB document to plain object and format dates
+    const userDoc = user as any;
     const profile = {
-      viegoUID: user.viegoUID,
-      visaUserIdentifier: user.visaUserIdentifier,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      phoneNumber: user.phoneNumber,
-      xp: user.xp,
-      schoolName: user.schoolName,
-      accountStatus: user.accountStatus,
-      preferences: user.preferences,
-      friends: user.friends,
-      badges: user.badges,
-      monsters: user.monsters,
-      alertPreferences: user.alertPreferences,
-      defaultAlertsPreferences: user.defaultAlertsPreferences,
-      visaAlertDocumentId: user.visaAlertDocumentId,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
+      viegoUID: userDoc.viegoUID,
+      visaUserIdentifier: userDoc.visaUserIdentifier,
+      email: userDoc.email,
+      firstName: userDoc.firstName,
+      lastName: userDoc.lastName,
+      phoneNumber: userDoc.phoneNumber,
+      xp: userDoc.xp,
+      schoolName: userDoc.schoolName,
+      accountStatus: userDoc.accountStatus,
+      preferences: userDoc.preferences,
+      friends: userDoc.friends,
+      badges: userDoc.badges,
+      monsters: userDoc.monsters,
+      alertPreferences: userDoc.alertPreferences,
+      defaultAlertsPreferences: userDoc.defaultAlertsPreferences,
+      visaAlertDocumentId: userDoc.visaAlertDocumentId,
+      createdAt: userDoc.createdAt,
+      updatedAt: userDoc.updatedAt,
     };
 
     return NextResponse.json({
@@ -128,7 +129,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if email already exists
-    const existingUser = await User.findOne({ email: body.email.toLowerCase() });
+    const existingUser = await (User as any).findOne({ email: body.email.toLowerCase() });
 
     if (existingUser) {
       return NextResponse.json(
@@ -147,7 +148,7 @@ export async function POST(request: NextRequest) {
       viegoUID = body.customViegoUID.trim();
 
       // Check if custom viegoUID is already taken
-      const existingUID = await User.findOne({ viegoUID });
+      const existingUID = await (User as any).findOne({ viegoUID });
       if (existingUID) {
         return NextResponse.json(
           {
@@ -175,7 +176,7 @@ export async function POST(request: NextRequest) {
     const visaUserIdentifier = visaProfile.visaUserIdentifier;
     console.log('✅ Visa profile created:', { visaUserIdentifier });
 
-    const newUser = await User.create({
+    const newUser = await (User as any).create({
       viegoUID,
       visaUserIdentifier,
       email: body.email.toLowerCase(),
@@ -260,7 +261,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const user = await User.findOne({ viegoUID: body.viegoUID });
+    const user = await (User as any).findOne({ viegoUID: body.viegoUID });
 
     if (!user) {
       return NextResponse.json(
@@ -347,7 +348,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const deletedUser = await User.findOneAndDelete({ viegoUID });
+    const deletedUser = await (User as any).findOneAndDelete({ viegoUID });
 
     if (!deletedUser) {
       return NextResponse.json(

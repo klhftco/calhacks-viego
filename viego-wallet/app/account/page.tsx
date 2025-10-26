@@ -1144,7 +1144,7 @@ export default function AccountPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                       {alertPreferencesState.map((pref, index) => {
-                        const contact = pref.contacts?.[0] || {};
+                        const contact = pref.contacts?.[0] || {} as any;
                         return (
                           <tr key={`${pref.alertType}-${index}`}>
                             <td className="px-4 py-3">

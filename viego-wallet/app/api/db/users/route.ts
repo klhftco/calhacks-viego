@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
       200
     );
 
-    const users = await User.find()
+    const users = await (User as any).find()
       .sort({ createdAt: -1 })
       .limit(limit)
       .lean();

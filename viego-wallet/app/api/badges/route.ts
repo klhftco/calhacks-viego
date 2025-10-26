@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const user = await User.findOne({ viegoUID }).populate('badges');
+    const user = await (User as any).findOne({ viegoUID }).populate('badges');
 
     if (!user) {
       return NextResponse.json(
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const user = await User.findOne({ viegoUID: body.viegoUID });
+    const user = await (User as any).findOne({ viegoUID: body.viegoUID });
 
     if (!user) {
       return NextResponse.json(
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the badge
-    const newBadge = await Badge.create({
+    const newBadge = await (Badge as any).create({
       name: body.badge.name,
       description: body.badge.description,
       category: body.badge.category,
@@ -164,7 +164,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const user = await User.findOne({ viegoUID });
+    const user = await (User as any).findOne({ viegoUID });
 
     if (!user) {
       return NextResponse.json(
@@ -177,7 +177,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Get badge to refund XP
-    const badge = await Badge.findById(badgeId);
+    const badge = await (Badge as any).findById(badgeId);
 
     if (badge) {
       // Refund XP
@@ -186,12 +186,12 @@ export async function DELETE(request: NextRequest) {
 
     // Remove badge from user's array
     user.badges = user.badges.filter(
-      (id) => id.toString() !== badgeId
+      (id: any) => id.toString() !== badgeId
     ) as any;
     await user.save();
 
     // Delete the badge document
-    await Badge.findByIdAndDelete(badgeId);
+    await (Badge as any).findByIdAndDelete(badgeId);
 
     console.log('✅ Badge removed:', { viegoUID, badgeId });
 

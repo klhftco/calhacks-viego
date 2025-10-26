@@ -117,6 +117,7 @@ export default function MapPage() {
           acceptsViego: true,
           icon: IconComponent,
           color: categoryInfo.color,
+          paymentMethods: [],
           terminalTypes: Array.from(new Set(terminalTypes)),
           position: {
             lat: validLat,

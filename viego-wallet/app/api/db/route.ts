@@ -24,11 +24,11 @@ export async function GET() {
 
     const readyState = mongoose.connection.readyState;
     const [userCount, activeUsers] = await Promise.all([
-      User.countDocuments(),
-      User.countDocuments({ accountStatus: 'active' }),
+      (User as any).countDocuments(),
+      (User as any).countDocuments({ accountStatus: 'active' }),
     ]);
 
-    const sampleUsers = await User.find()
+    const sampleUsers = await (User as any).find()
       .select('viegoUID email accountStatus friends createdAt updatedAt')
       .sort({ createdAt: -1 })
       .limit(5)

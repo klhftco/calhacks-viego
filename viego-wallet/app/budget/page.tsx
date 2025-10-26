@@ -22,6 +22,15 @@ type BudgetLimit = {
   currentSpend: number;
 };
 
+type SpendingLimit = {
+  id: number;
+  category: string;
+  icon: any;
+  limit: number;
+  spent: number;
+  color: string;
+};
+
 const USERS: User[] = [
   {
     userIdentifier: "bailey-student-001",
@@ -106,6 +115,8 @@ export default function BudgetPage() {
   }, [selectedUser]);
 
   async function loadData() {
+    if (!selectedUser) return;
+
     setLoading(true);
     try {
       // Fetch alerts/transaction history
@@ -142,6 +153,8 @@ export default function BudgetPage() {
   }
 
   async function handleSimulateTransaction() {
+    if (!selectedUser) return;
+
     setLoading(true);
     try {
       const res = await fetch("/api/vctc/decision", {
@@ -462,12 +475,12 @@ export default function BudgetPage() {
                     <h4 className="font-bold text-lg mb-4">Spending by Category</h4>
                     <div className="space-y-3">
                       {Object.entries(spendingByCategory)
-                        .sort(([, a], [, b]) => b - a)
+                        .sort(([, a], [, b]) => (b as number) - (a as number))
                         .slice(0, 6)
                         .map(([category, amount]) => (
                           <div key={category} className="flex justify-between items-center">
                             <span className="text-gray-700">{category}</span>
-                            <span className="font-bold text-gray-900">${amount.toFixed(2)}</span>
+                            <span className="font-bold text-gray-900">${(amount as number).toFixed(2)}</span>
                           </div>
                         ))}
                       {Object.keys(spendingByCategory).length === 0 && (

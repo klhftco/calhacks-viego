@@ -5,10 +5,10 @@ import { getCustomerProfile } from '@/lib/vctc-client';
 // Retrieves a customer profile by userIdentifier
 export async function GET(
   request: Request,
-  { params }: { params: { userIdentifier: string } }
+  { params }: { params: Promise<{ userIdentifier: string }> }
 ) {
   try {
-    const userIdentifier = params.userIdentifier;
+    const { userIdentifier } = await params;
 
     if (!userIdentifier) {
       return NextResponse.json(

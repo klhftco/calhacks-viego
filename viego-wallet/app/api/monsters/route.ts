@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const user = await User.findOne({ viegoUID }).populate('monsters');
+    const user = await (User as any).findOne({ viegoUID }).populate('monsters');
 
     if (!user) {
       return NextResponse.json(
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const user = await User.findOne({ viegoUID: body.viegoUID });
+    const user = await (User as any).findOne({ viegoUID: body.viegoUID });
 
     if (!user) {
       return NextResponse.json(
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the monster
-    const newMonster = await Monster.create({
+    const newMonster = await (Monster as any).create({
       name: body.monster.name,
       type: body.monster.type || 'egg',
       species: body.monster.species,
@@ -173,7 +173,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Verify user owns this monster
-    const user = await User.findOne({ viegoUID: body.viegoUID });
+    const user = await (User as any).findOne({ viegoUID: body.viegoUID });
 
     if (!user) {
       return NextResponse.json(
@@ -186,7 +186,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const ownsMonster = user.monsters.some(
-      (id) => id.toString() === body.monsterId
+      (id: any) => id.toString() === body.monsterId
     );
 
     if (!ownsMonster) {
@@ -200,7 +200,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update the monster
-    const monster = await Monster.findById(body.monsterId);
+    const monster = await (Monster as any).findById(body.monsterId);
 
     if (!monster) {
       return NextResponse.json(
@@ -266,7 +266,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const user = await User.findOne({ viegoUID });
+    const user = await (User as any).findOne({ viegoUID });
 
     if (!user) {
       return NextResponse.json(
@@ -280,12 +280,12 @@ export async function DELETE(request: NextRequest) {
 
     // Remove monster from user's array
     user.monsters = user.monsters.filter(
-      (id) => id.toString() !== monsterId
+      (id: any) => id.toString() !== monsterId
     ) as any;
     await user.save();
 
     // Delete the monster document
-    await Monster.findByIdAndDelete(monsterId);
+    await (Monster as any).findByIdAndDelete(monsterId);
 
     console.log('✅ Monster removed:', { viegoUID, monsterId });
 

@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
 
   await connectToDatabase();
 
-  const user = await User.findOne({ viegoUID }).lean();
+  const user = await (User as any).findOne({ viegoUID }).lean();
 
   if (!user) {
     return NextResponse.json(
@@ -67,13 +67,14 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  const userDoc = user as any;
   return NextResponse.json({
     success: true,
     data: {
-      visaUserIdentifier: user.visaUserIdentifier,
-      visaAlertDocumentId: user.visaAlertDocumentId,
-      alertPreferences: user.alertPreferences || [],
-      defaultAlertsPreferences: user.defaultAlertsPreferences || [],
+      visaUserIdentifier: userDoc.visaUserIdentifier,
+      visaAlertDocumentId: userDoc.visaAlertDocumentId,
+      alertPreferences: userDoc.alertPreferences || [],
+      defaultAlertsPreferences: userDoc.defaultAlertsPreferences || [],
     },
   });
 }
@@ -91,7 +92,7 @@ export async function POST(request: NextRequest) {
 
   await connectToDatabase();
 
-  const user = await User.findOne({ viegoUID });
+  const user = await (User as any).findOne({ viegoUID });
 
   if (!user) {
     return NextResponse.json(
@@ -149,7 +150,7 @@ export async function POST(request: NextRequest) {
       }
       const signaturesToRemove = new Set(sanitizedPreferences.map(preferenceSignature));
       updatedPreferences = updatedPreferences.filter(
-        (pref) => !signaturesToRemove.has(preferenceSignature(pref as AlertPreference))
+        (pref: any) => !signaturesToRemove.has(preferenceSignature(pref as AlertPreference))
       );
       break;
     }
