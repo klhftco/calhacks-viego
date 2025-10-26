@@ -133,6 +133,11 @@ export default function BudgetPage() {
         } else {
           setAlerts(realAlerts);
         }
+      } else {
+        // API failed, fall back to mock data
+        if (MOCK_TRANSACTIONS[selectedUser.userIdentifier as keyof typeof MOCK_TRANSACTIONS]) {
+          setAlerts(MOCK_TRANSACTIONS[selectedUser.userIdentifier as keyof typeof MOCK_TRANSACTIONS]);
+        }
       }
 
       // Fetch available controls
@@ -147,6 +152,10 @@ export default function BudgetPage() {
       }
     } catch (error) {
       console.error("Error loading data:", error);
+      // On error, try to load mock data as fallback
+      if (selectedUser && MOCK_TRANSACTIONS[selectedUser.userIdentifier as keyof typeof MOCK_TRANSACTIONS]) {
+        setAlerts(MOCK_TRANSACTIONS[selectedUser.userIdentifier as keyof typeof MOCK_TRANSACTIONS]);
+      }
     } finally {
       setLoading(false);
     }

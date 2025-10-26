@@ -26,7 +26,7 @@ interface MerchantMapProps {
 export default function MerchantMap({ merchants, center, zoom = 14 }: MerchantMapProps) {
   const [selectedMerchant, setSelectedMerchant] = useState<Merchant | null>(null);
 
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY || '';
 
   // Default center (Berkeley, CA)
   const defaultCenter = { lat: 37.871966, lng: -122.259960 };
@@ -36,7 +36,7 @@ export default function MerchantMap({ merchants, center, zoom = 14 }: MerchantMa
     return (
       <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-8 text-center">
         <p className="text-red-600 font-semibold">
-          Google Maps API key is missing. Please add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to your .env.local file.
+          Google Maps API key is missing. Please add GOOGLE_MAPS_API_KEY to your .env.local file.
         </p>
       </div>
     );

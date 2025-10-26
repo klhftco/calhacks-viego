@@ -1,27 +1,7 @@
-import fs from 'fs';
-import path from 'path';
-
 /**
- * Local JSON file-based storage
- * Will be replaced with MongoDB later
+ * In-memory storage for demo/production deployment
+ * Works on serverless platforms like Vercel
  */
-
-const DATA_DIR = path.join(process.cwd(), 'data');
-const PAYMENTS_FILE = path.join(DATA_DIR, 'payments.json');
-const REMINDERS_FILE = path.join(DATA_DIR, 'reminders.json');
-
-// Ensure data directory exists
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-}
-
-// Initialize files if they don't exist
-if (!fs.existsSync(PAYMENTS_FILE)) {
-  fs.writeFileSync(PAYMENTS_FILE, JSON.stringify([], null, 2));
-}
-if (!fs.existsSync(REMINDERS_FILE)) {
-  fs.writeFileSync(REMINDERS_FILE, JSON.stringify([], null, 2));
-}
 
 export interface AutomatedPayment {
   id: string;
@@ -54,29 +34,22 @@ export interface PaymentReminder {
   createdAt: string;
 }
 
+// In-memory storage
+let paymentsStore: AutomatedPayment[] = [];
+let remindersStore: PaymentReminder[] = [];
+
 /**
- * Read payments from JSON file
+ * Read payments from memory
  */
 export function readPayments(): AutomatedPayment[] {
-  try {
-    const data = fs.readFileSync(PAYMENTS_FILE, 'utf-8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error('Error reading payments:', error);
-    return [];
-  }
+  return paymentsStore;
 }
 
 /**
- * Write payments to JSON file
+ * Write payments to memory
  */
 export function writePayments(payments: AutomatedPayment[]): void {
-  try {
-    fs.writeFileSync(PAYMENTS_FILE, JSON.stringify(payments, null, 2));
-  } catch (error) {
-    console.error('Error writing payments:', error);
-    throw error;
-  }
+  paymentsStore = payments;
 }
 
 /**
@@ -141,28 +114,17 @@ export function deletePayment(id: string): boolean {
 }
 
 /**
- * Read reminders from JSON file
+ * Read reminders from memory
  */
 export function readReminders(): PaymentReminder[] {
-  try {
-    const data = fs.readFileSync(REMINDERS_FILE, 'utf-8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error('Error reading reminders:', error);
-    return [];
-  }
+  return remindersStore;
 }
 
 /**
- * Write reminders to JSON file
+ * Write reminders to memory
  */
 export function writeReminders(reminders: PaymentReminder[]): void {
-  try {
-    fs.writeFileSync(REMINDERS_FILE, JSON.stringify(reminders, null, 2));
-  } catch (error) {
-    console.error('Error writing reminders:', error);
-    throw error;
-  }
+  remindersStore = reminders;
 }
 
 /**
