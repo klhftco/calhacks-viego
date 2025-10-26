@@ -70,11 +70,26 @@ export default function BudgetPage() {
     { id: 3, category: "Transportation", icon: Bus, limit: 100, spent: 42, color: "#3b82f6" }, // blue-500
     { id: 4, category: "Housing", icon: Home, limit: 800, spent: 800, color: "#10b981" }, // emerald-500
   ]);
-  const [selectedUser, setSelectedUser] = useState<User>(USERS[0]);
+
+  // Get logged-in user from localStorage
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<"overview" | "simulate" | "limits">("overview");
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(false);
   const [availableControls, setAvailableControls] = useState<string[]>([]);
+
+  // Load user from localStorage on mount
+  useEffect(() => {
+    const savedUser = localStorage.getItem("viego_user");
+    const demoUserID = localStorage.getItem("demo_user");
+
+    if (savedUser && demoUserID) {
+      const user = USERS.find(u => u.userIdentifier === demoUserID);
+      if (user) {
+        setSelectedUser(user);
+      }
+    }
+  }, []);
 
   // Simulate transaction state
   const [simAmount, setSimAmount] = useState("25.00");
@@ -166,8 +181,9 @@ export default function BudgetPage() {
   }, {} as Record<string, number>);
 
   // Calculate budget limits (based on user - using actual VCTC controls)
-  const budgetLimits: BudgetLimit[] =
-    selectedUser.firstName === "Bailey"
+  const budgetLimits: BudgetLimit[] = !selectedUser
+    ? []
+    : selectedUser.firstName === "Bailey"
       ? [
           {
             controlType: "MCT_GROCERY",
@@ -227,45 +243,37 @@ export default function BudgetPage() {
       </div>
 
       <div className="container mx-auto px-4 py-6">
-        {/* User Selection */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <CreditCard className="text-blue-600" />
-            Select Student Profile
-          </h2>
-          <div className="grid md:grid-cols-2 gap-4">
-            {USERS.map((user) => (
-              <button
-                key={user.userIdentifier}
-                onClick={() => setSelectedUser(user)}
-                className={`p-5 rounded-xl border-2 transition-all text-left ${
-                  selectedUser.userIdentifier === user.userIdentifier
-                    ? "border-blue-500 bg-blue-50 shadow-md"
-                    : "border-gray-200 hover:border-gray-300 hover:shadow"
-                }`}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-2xl shadow-lg">
-                    {user.firstName[0]}
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-bold text-lg">
-                      {user.firstName} {user.lastName}
-                    </div>
-                    <div className="text-sm text-gray-600 mt-1">{user.description}</div>
-                    <div className="text-xs text-gray-400 font-mono mt-1">
-                      {user.email}
-                    </div>
-                  </div>
-                  {selectedUser.userIdentifier === user.userIdentifier && (
-                    <div className="text-blue-600 font-bold">✓</div>
-                  )}
-                </div>
-              </button>
-            ))}
+        {/* Loading or no user */}
+        {!selectedUser && (
+          <div className="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-6 mb-6 text-center">
+            <p className="text-yellow-800 font-semibold">
+              Please <a href="/login" className="underline text-blue-600">login</a> to view your budget dashboard
+            </p>
           </div>
-        </div>
+        )}
 
+        {/* User Header */}
+        {selectedUser && (
+          <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-3xl shadow-lg">
+                {selectedUser.firstName[0]}
+              </div>
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {selectedUser.firstName} {selectedUser.lastName}
+                </h2>
+                <p className="text-sm text-gray-600 mt-1">{selectedUser.description}</p>
+                <p className="text-xs text-gray-400 font-mono mt-1">{selectedUser.email}</p>
+              </div>
+              <CreditCard className="text-blue-600" size={32} />
+            </div>
+          </div>
+        )}
+
+        {/* Only show content if user is logged in */}
+        {selectedUser && (
+          <>
         {/* Quick Stats */}
         <div className="grid md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white border-l-4 border-green-500 rounded-lg shadow p-4">
@@ -776,6 +784,8 @@ export default function BudgetPage() {
             )}
           </div>
         </div>
+          </>
+        )}
       </div>
     </div>
   );

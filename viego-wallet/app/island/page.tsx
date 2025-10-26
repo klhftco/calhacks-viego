@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { useIsland } from "@/context/IslandContext";
 import { Egg, Sparkles, Trophy, TrendingUp, Star, Plus } from "lucide-react";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 interface Monster {
   id: number;
@@ -21,6 +23,19 @@ interface EggProgress {
   currentAmount: number;
   emoji: string;
 }
+
+// Map monster emojis to dinosaur images
+const getDinoImage = (emoji: string): string => {
+  const dinoMap: Record<string, string> = {
+    "🦖": "/assets/trex.png",
+    "🐉": "/assets/pterodactyl.png",
+    "🦕": "/assets/plesiosaur.png",
+    "🦴": "/assets/stegosaurus.png",
+    "🐊": "/assets/ankylosaurus.png",
+    "🦎": "/assets/triceratops.png",
+  };
+  return dinoMap[emoji] || "/assets/trex.png";
+};
 
 export default function IslandPage() {
   const { monsters, level: islandLevel, currentXP, goalXP, setXP } = useIsland();
@@ -77,7 +92,8 @@ export default function IslandPage() {
   }, [monsters]);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <ProtectedRoute>
+      <div className="container mx-auto px-4 py-8">
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-900 mb-2">My Island</h1>
@@ -104,10 +120,18 @@ export default function IslandPage() {
       </div>
 
       {/* Isometric Grassy Plains with roaming monsters */}
-      <div className="rounded-3xl p-8 mb-8 min-h-[420px] shadow-lg border-4 border-white relative overflow-hidden bg-gradient-to-br from-green-200 to-blue-200">
-        {/* faux isometric grid */}
-        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "linear-gradient(135deg, rgba(255,255,255,0.2) 25%, transparent 25%), linear-gradient(225deg, rgba(255,255,255,0.2) 25%, transparent 25%), linear-gradient(45deg, rgba(255,255,255,0.2) 25%, transparent 25%), linear-gradient(315deg, rgba(255,255,255,0.2) 25%, rgba(255,255,255,0) 25%)", backgroundSize: '40px 40px', backgroundPosition: '0 0, 0 20px, 20px -20px, -20px 0' }} />
-        <div className="absolute top-4 left-4 bg-white/90 rounded-full px-4 py-2 shadow-md">
+      <div className="rounded-3xl mb-8 shadow-lg border-4 border-white relative overflow-hidden" style={{ minHeight: '600px' }}>
+        {/* Landscape Background */}
+        <div className="absolute inset-0">
+          <Image
+            src="/assets/landscape.png"
+            alt="Viego Island"
+            fill
+            style={{ objectFit: 'contain' }}
+            priority
+          />
+        </div>
+        <div className="absolute top-4 left-4 bg-white/90 rounded-full px-4 py-2 shadow-md z-10">
           <span className="font-semibold text-gray-700">🏝️ Viego Island</span>
         </div>
 
@@ -160,19 +184,26 @@ export default function IslandPage() {
               title={`Traits: ${m.traits.join(', ')}`}
             >
               <div
-                className="text-5xl drop-shadow-sm leading-none text-center"
+                className="drop-shadow-lg leading-none text-center"
                 style={{
                   transform: `scale(${mmeta.scale})`,
                   animation: `wobble ${mmeta.wobbleDur}s ease-in-out ${mmeta.wobbleDelay}s infinite alternate`,
                   display: 'inline-block',
                 }}
               >
-                {m.emoji}
+                <Image
+                  src={getDinoImage(m.emoji)}
+                  alt={m.name}
+                  width={80}
+                  height={80}
+                  className="pointer-events-none"
+                  style={{ filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))' }}
+                />
               </div>
               <div className="mt-1 mx-auto w-max">
                 <span className={`${m.color} text-white px-2 py-0.5 rounded-full text-xs font-semibold`}>Lv. {m.level}</span>
               </div>
-              <div className="text-[10px] text-gray-700 text-center mt-1 font-medium">{m.name}</div>
+              <div className="text-[10px] text-gray-700 bg-white/80 px-2 py-0.5 rounded-full text-center mt-1 font-medium">{m.name}</div>
             </div>
           );
         })}
@@ -260,5 +291,6 @@ export default function IslandPage() {
         </div>
       </div>
     </div>
+    </ProtectedRoute>
   );
 }

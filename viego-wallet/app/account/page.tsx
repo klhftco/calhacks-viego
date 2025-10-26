@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useAccount } from "@/hooks/useAccount";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -17,6 +18,7 @@ import {
   Save,
 } from "lucide-react";
 import { AlertPreference, NotificationDetail } from "@/types/visaAlerts";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 const ALERT_TYPES = [
   "DECLINE_ALL",
@@ -63,6 +65,7 @@ const DEFAULT_PORTFOLIO_ID = "001";
 const DEFAULT_CALLING_CODE = "1";
 
 export default function AccountPage() {
+  const router = useRouter();
   const { profile, loading, error, createAccount, getAccount, clearError } = useAccount();
   const { user, login, logout, isLoading: authLoading } = useAuth();
 
@@ -476,7 +479,9 @@ export default function AccountPage() {
    */
   const handleLogout = () => {
     logout();
-    setMode("settings");
+    localStorage.removeItem("viego_user");
+    localStorage.removeItem("demo_user");
+    router.push("/login");
   };
 
   /**
