@@ -11,7 +11,7 @@ export default function Navigation() {
   const navItems = [
     { href: "/island", icon: Egg, label: "Island" },
     { href: "/budget", icon: TrendingUp, label: "Budget" },
-    { href: "/", icon: Home, label: "Home" },
+    // { href: "/", icon: Home, label: "Home" },
     { href: "/payments", icon: Calendar, label: "Payments" },
     { href: "/map", icon: MapPin, label: "Map" },
     { href: "/friends", icon: Users, label: "Friends" },
