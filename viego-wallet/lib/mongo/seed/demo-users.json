@@ -1,0 +1,32 @@
+[
+  {
+    "userIdentifier": "bailey-student-001",
+    "firstName": "Bailey",
+    "lastName": "Chen",
+    "email": "bailey@university.edu",
+    "pan": "4514170000000001",
+    "viegoUID": "viego_bailey_001",
+    "schoolName": "UC Berkeley",
+    "xp": 250,
+    "accountStatus": "active",
+    "preferences": {
+      "notifications": true,
+      "budgetAlerts": true
+    }
+  },
+  {
+    "userIdentifier": "oliver-student-002",
+    "firstName": "Oliver",
+    "lastName": "Martinez",
+    "email": "oliver@university.edu",
+    "pan": "4514170000000002",
+    "viegoUID": "viego_oliver_002",
+    "schoolName": "Stanford University",
+    "xp": 180,
+    "accountStatus": "active",
+    "preferences": {
+      "notifications": true,
+      "budgetAlerts": true
+    }
+  }
+]

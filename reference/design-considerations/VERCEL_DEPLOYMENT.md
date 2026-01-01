@@ -103,19 +103,20 @@ vercel --prod
 
 ### 1. Initialize Demo Data
 
-After first deployment, run the demo initialization:
+Before deployment, run the seeding script locally:
 
 ```bash
-# Call the init endpoint (one-time setup)
-curl -X POST https://your-app.vercel.app/api/demo/init
-```
+# Seed both MongoDB and Visa API
+npm run seed
 
-**OR** create a manual script:
+# Or seed only if database is empty
+npm run seed:if-empty
 
-```bash
-# Run setup script
-cd viego-wallet
-npx tsx scripts/setup-demo-users.ts
+# Seed MongoDB only
+npm run seed:db
+
+# Seed Visa API only
+npm run seed:visa
 ```
 
 ### 2. Test the Deployment
@@ -201,8 +202,9 @@ Common issues:
    - If calling external APIs, ensure proper headers
 
 3. **Demo data not loading**:
-   - Run `/api/demo/init` endpoint manually
+   - Run `npm run seed` locally to initialize database
    - Check Vercel Function Logs for errors
+   - Verify MongoDB connection string is set
 
 ## Performance Optimization
 
@@ -303,10 +305,10 @@ console.log(JSON.stringify({
 
 For Cal Hacks demo:
 
-1. **Pre-populate data**: Run `/api/demo/init` before demo
+1. **Pre-populate data**: Run `npm run seed` locally before demo
 2. **Mock fallbacks**: Mock data is already in place for budget page
 3. **Clear instructions**: Login page explains demo users
-4. **Reset capability**: Can call init endpoint again to reset
+4. **Reset capability**: Can run seed script again to reset (clears existing demo data first)
 
 ## Rollback Strategy
 

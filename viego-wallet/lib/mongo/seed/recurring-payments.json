@@ -1,0 +1,71 @@
+[
+  {
+    "userId": "viego_bailey_001",
+    "type": "rent",
+    "merchantName": "University Village Apartments",
+    "merchantCategoryCode": "6513",
+    "amount": 1200,
+    "frequency": "monthly",
+    "dueDay": 1,
+    "reminderDays": [7, 3, 1],
+    "status": "active",
+    "nextDueDate": "2026-02-01T08:00:00.000Z"
+  },
+  {
+    "userId": "viego_bailey_001",
+    "type": "tuition",
+    "merchantName": "UC Berkeley",
+    "merchantCategoryCode": "8220",
+    "amount": 7500,
+    "frequency": "semester",
+    "reminderDays": [14, 7, 3],
+    "status": "active",
+    "nextDueDate": "2026-08-15T08:00:00.000Z"
+  },
+  {
+    "userId": "viego_bailey_001",
+    "type": "transit",
+    "merchantName": "Clipper Card",
+    "merchantCategoryCode": "4111",
+    "amount": 25,
+    "frequency": "monthly",
+    "dueDay": 1,
+    "reminderDays": [3],
+    "status": "active",
+    "nextDueDate": "2026-02-01T08:00:00.000Z"
+  },
+  {
+    "userId": "viego_oliver_002",
+    "type": "rent",
+    "merchantName": "Campus Housing - Stanford",
+    "merchantCategoryCode": "6513",
+    "amount": 1800,
+    "frequency": "quarterly",
+    "reminderDays": [14, 7, 3],
+    "status": "active",
+    "nextDueDate": "2026-03-01T08:00:00.000Z"
+  },
+  {
+    "userId": "viego_oliver_002",
+    "type": "tuition",
+    "merchantName": "Stanford University",
+    "merchantCategoryCode": "8220",
+    "amount": 9500,
+    "frequency": "semester",
+    "reminderDays": [14, 7, 3],
+    "status": "active",
+    "nextDueDate": "2026-08-20T08:00:00.000Z"
+  },
+  {
+    "userId": "viego_oliver_002",
+    "type": "subscriptions",
+    "merchantName": "Spotify Student",
+    "merchantCategoryCode": "5815",
+    "amount": 5.99,
+    "frequency": "monthly",
+    "dueDay": 15,
+    "reminderDays": [1],
+    "status": "active",
+    "nextDueDate": "2026-02-15T08:00:00.000Z"
+  }
+]
