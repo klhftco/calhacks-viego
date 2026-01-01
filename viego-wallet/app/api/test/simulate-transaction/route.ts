@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { simulateTransaction, getCustomerRules } from '@/lib/vctc-client';
+import { simulateTransaction, getCustomerRules } from '@/lib/visa/vctcClient';
 import { getPaymentById } from '@/lib/storage';
 
 /**

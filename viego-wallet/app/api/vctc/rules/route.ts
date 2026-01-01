@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { addOrUpdateRules, createCustomerRules } from '@/lib/vctc-client';
+import { addOrUpdateRules, createCustomerRules } from '@/lib/visa/vctcClient';
 
 // POST /api/vctc/rules
 // Adds or updates rules on an existing control document

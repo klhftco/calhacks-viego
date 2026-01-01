@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAlertsByUser } from '@/lib/vctc-client';
+import { getAlertsByUser } from '@/lib/visa/vctcClient';
 
 // GET /api/vctc/alerts?userIdentifier=demo-user-001
 // Fetch alert history by userIdentifier

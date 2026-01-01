@@ -8,7 +8,7 @@ import {
   calculateNextDueDate,
   type AutomatedPayment,
 } from '@/lib/storage';
-import { createPaymentMonitoringRule, deleteCustomerRules } from '@/lib/vctc-client';
+import { createPaymentMonitoringRule, deleteCustomerRules } from '@/lib/visa/vctcClient';
 
 /**
  * GET /api/payments?userId=xxx

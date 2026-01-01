@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
-import { connectToDatabase } from '@/lib/mongodb';
-import { User } from '@/models/User';
+import { connectToDatabase } from '@/lib/mongo/connection';
+import { User } from '@/lib/mongo/models/User';
 
 function mapReadyState(state: number) {
   switch (state) {

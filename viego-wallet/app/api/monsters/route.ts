@@ -4,9 +4,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
-import { User } from '@/models/User';
-import { Monster } from '@/models/Monster';
+import { connectToDatabase } from '@/lib/mongo/connection';
+import { User } from '@/lib/mongo/models/User';
+import { Monster } from '@/lib/mongo/models/Monster';
 
 /**
  * GET /api/monsters?viegoUID=xxx

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createPaymentMonitoringRule, getCustomerRules } from '@/lib/vctc-client';
+import { createPaymentMonitoringRule, getCustomerRules } from '@/lib/visa/vctcClient';
 
 /**
  * POST /api/test/customer-rules

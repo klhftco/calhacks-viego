@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createCustomerProfile } from '@/lib/vctc-client';
+import { createCustomerProfile } from '@/lib/visa/vctcClient';
 
 // POST /api/vctc/customer-profile
 // Creates a VCTC customer profile with contact preferences

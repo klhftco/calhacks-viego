@@ -5,9 +5,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
-import { User } from '@/models/User';
-import { createCustomerProfile } from '@/lib/visaClient';
+import { connectToDatabase } from '@/lib/mongo/connection';
+import { User } from '@/lib/mongo/models/User';
+import { createCustomerProfile } from '@/lib/visa/vctcClient';
 
 function generateViegoUID(): string {
   return `viego_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;

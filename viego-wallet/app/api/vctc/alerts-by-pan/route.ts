@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAlertHistory } from '@/lib/vctc-client';
+import { getAlertHistory } from '@/lib/visa/vctcClient';
 
 // GET /api/vctc/alerts-by-pan?pan=4514170000000001&limit=10
 export async function GET(request: Request) {

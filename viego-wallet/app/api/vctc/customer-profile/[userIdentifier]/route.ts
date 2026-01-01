@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCustomerProfile } from '@/lib/vctc-client';
+import { getCustomerProfile } from '@/lib/visa/vctcClient';
 
 // GET /api/vctc/customer-profile/[userIdentifier]
 // Retrieves a customer profile by userIdentifier

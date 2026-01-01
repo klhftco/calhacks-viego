@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { enrollCard } from '@/lib/vctc-client';
+import { enrollCard } from '@/lib/visa/vctcClient';
 
 // POST /api/vctc/enroll-card
 // Enrolls a PAN for a user and returns the control document reference

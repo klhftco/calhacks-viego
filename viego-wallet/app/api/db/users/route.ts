@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
-import { User } from '@/models/User';
+import { connectToDatabase } from '@/lib/mongo/connection';
+import { User } from '@/lib/mongo/models/User';
 
 export async function GET(request: NextRequest) {
   try {

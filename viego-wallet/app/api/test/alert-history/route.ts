@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAlertHistory } from '@/lib/vctc-client';
+import { getAlertHistory } from '@/lib/visa/vctcClient';
 
 /**
  * GET /api/test/alert-history?card=xxx

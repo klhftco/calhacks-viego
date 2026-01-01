@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requestDecision } from '@/lib/vctc-client';
+import { requestDecision } from '@/lib/visa/vctcClient';
 
 // POST /api/vctc/decision
 // Requests an authorization decision to simulate a transaction

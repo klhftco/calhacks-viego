@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { testVCTCConnection } from '@/lib/vctc-client';
+import { testVCTCConnection } from '@/lib/visa/vctcClient';
 
 /**
  * GET /api/test/vctc

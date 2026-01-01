@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getMerchantTypeControls, getTransactionTypeControls } from '@/lib/vctc-client';
+import { getMerchantTypeControls, getTransactionTypeControls } from '@/lib/visa/vctcClient';
 
 // GET /api/vctc/available-controls?pan=4514170000000001
 // Returns available merchant and transaction controls for a card

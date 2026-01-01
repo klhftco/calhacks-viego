@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { searchMerchants } from '@/lib/visaClient';
+import { searchMerchants } from '@/lib/visa/merchantClient';
 
 export async function GET(request: NextRequest) {
   try {

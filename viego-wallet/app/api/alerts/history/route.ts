@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   fetchAccountNotifications,
   isVisaAlertsProxyEnabled,
-} from '@/lib/visaAlerts';
+} from '@/lib/visa/alertsClient';
 import {
   AccountNotificationsInquiryRequest,
   AccountNotificationsInquiryResponse,
-} from '@/types/visaAlerts';
+} from '@/lib/visa/types';
 
 export async function POST(request: NextRequest) {
   const body = (await request.json()) as AccountNotificationsInquiryRequest;

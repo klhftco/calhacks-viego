@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { useIsland } from '@/context/IslandContext';
+import { useIsland } from '@/contexts/IslandContext';
 
 export default function MiniIsland() {
   const { monsters: allMonsters, level: islandLevel, currentXP: islandCurrent, goalXP: islandGoal } = useIsland();

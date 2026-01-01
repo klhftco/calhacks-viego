@@ -4,9 +4,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
-import { User } from '@/models/User';
-import { Badge } from '@/models/Badge';
+import { connectToDatabase } from '@/lib/mongo/connection';
+import { User } from '@/lib/mongo/models/User';
+import { Badge } from '@/lib/mongo/models/Badge';
 
 /**
  * GET /api/badges?viegoUID=xxx

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { fetchOffersForMerchant, getSpendingStatus, checkoutTransaction } from '@/hooks/useMerchantOffers';
-import { useIsland } from '@/context/IslandContext';
+import { useIsland } from '@/contexts/IslandContext';
 
 interface Props {
   merchant: { id: number | string; name: string; contentId?: string };
