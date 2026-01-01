@@ -6,7 +6,7 @@
 import mongoose, { Schema, model, models } from 'mongoose';
 import { IMonster, Monster } from './Monster';
 import { IBadge, Badge } from './Badge';
-import { AlertPreference, AlertContact } from '@/types/visaAlerts';
+import { AlertPreference, AlertContact } from '@/lib/visa/types';
 
 export interface IUser {
   _id?: string;
