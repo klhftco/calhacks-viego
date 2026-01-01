@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { AlertPreference, AlertContact } from '@/types/visaAlerts';
+import { AlertPreference, AlertContact } from '@/lib/visa/types';
 
 export interface CustomerProfile {
   viegoUID: string;
