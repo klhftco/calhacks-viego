@@ -50,3 +50,28 @@ VDP Mutual TLS (certs-v3)
 **Security**
 - Keep `vdp_client_key.pem` private and out of version control.
 - Rotate/revoke the cert/key in VDP immediately if exposed.
+
+# Certificate Files Directory
+
+Place your Visa Sandbox certificate files here.
+
+## Required Files
+
+Download these from your Visa Developer Dashboard:
+
+1. **visa_private_key.pem** - Your private key for two-way SSL authentication
+2. **visa_cert.pem** - Your SSL certificate (if separate from private key)
+3. **visa_message_private_key.pem** - Private key for message encryption/signing
+
+## How to Get These Files
+
+1. Log in to [Visa Developer Portal](https://developer.visa.com/)
+2. Go to your project dashboard
+3. Navigate to **Credentials → Certificates**
+4. Download the certificate bundle or generate new certificates
+5. Place the `.pem` files in this directory
+
+## Security Note
+
+All files in this directory are automatically ignored by git (see .gitignore).
+Never commit certificate files to version control.
