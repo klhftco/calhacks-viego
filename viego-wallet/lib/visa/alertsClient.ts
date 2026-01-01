@@ -1,9 +1,9 @@
-import { makeVisaApiCall } from './visaClient';
+import { makeVisaApiCall } from './visa/visaBaseClient';
 import {
   AccountNotificationsInquiryRequest,
   AccountNotificationsInquiryResponse,
   AlertPreference,
-} from '@/types/visaAlerts';
+} from '@/lib/visa/types';
 
 interface VisaAlertPreferenceResponse {
   processingTimeinMs: number;
