@@ -1,5 +1,9 @@
+/**
+ * @deprecated This route uses old in-memory storage system.
+ * TODO: Delete this file - replaced by MongoDB RecurringPayment model
+ */
 import { NextResponse } from 'next/server';
-import { getPendingReminders, markReminderAsSent, getPaymentById } from '@/lib/storage';
+import { getPendingReminders, markReminderAsSent, getPaymentById } from '@/lib/old/storage';
 
 /**
  * GET /api/cron/check-reminders

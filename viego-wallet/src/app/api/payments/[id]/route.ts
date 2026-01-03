@@ -1,5 +1,9 @@
+/**
+ * @deprecated This route uses old in-memory storage system.
+ * TODO: Delete this file - replaced by MongoDB RecurringPayment model
+ */
 import { NextResponse } from 'next/server';
-import { getPaymentById, updatePayment } from '@/lib/storage';
+import { getPaymentById, updatePayment } from '@/lib/old/storage';
 
 /**
  * GET /api/payments/[id]

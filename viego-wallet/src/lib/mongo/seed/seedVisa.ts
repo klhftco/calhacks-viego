@@ -8,24 +8,38 @@
  * 3. Should be run separately in demo environments
  */
 
-import demoUsers from './demo-users.json';
-import vctcRules from './vctc-rules.json';
-import testTransactions from './test-transactions.json';
+import demoUsersData from './demo-users.json';
+import vctcRulesData from './vctc-rules.json';
+import testTransactionsData from './test-transactions.json';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
+interface DemoUser {
+  userIdentifier: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  pan: string;
+}
+
+interface UserSeedResult {
+  profile: string;
+  documentID?: string;
+  rules?: string;
+  transactions: number;
+  errors: string[];
+}
 
 interface VisaSeedResult {
   success: boolean;
   users: {
-    [key: string]: {
-      profile: string;
-      documentID?: string;
-      rules?: string;
-      transactions: number;
-      errors: string[];
-    };
+    [key: string]: UserSeedResult;
   };
 }
+
+const demoUsers = demoUsersData as DemoUser[];
+const vctcRules = vctcRulesData as Record<string, any>;
+const testTransactions = testTransactionsData as Record<string, any>;
 
 async function callApi(path: string, options?: RequestInit) {
   const res = await fetch(`${BASE_URL}${path}`, {
@@ -55,10 +69,10 @@ export async function seedVisaAPI(): Promise<VisaSeedResult> {
   console.log('🌱 Seeding Visa VCTC API...\n');
 
   for (const user of demoUsers) {
-    const userResult = {
+    const userResult: UserSeedResult = {
       profile: 'pending',
       transactions: 0,
-      errors: [] as string[],
+      errors: [],
     };
 
     result.users[user.userIdentifier] = userResult;
@@ -108,7 +122,7 @@ export async function seedVisaAPI(): Promise<VisaSeedResult> {
         controlsResult.merchantControls?.resource?.availableMerchantTypeRules || [];
 
       // 4. Set rules from JSON config
-      const userRules = (vctcRules as any)[user.userIdentifier];
+      const userRules = vctcRules[user.userIdentifier];
       if (userRules && userRules.merchantControls) {
         console.log(`⚙️  Setting transaction control rules...`);
 
@@ -144,7 +158,7 @@ export async function seedVisaAPI(): Promise<VisaSeedResult> {
       }
 
       // 5. Simulate test transactions
-      const transactions = (testTransactions as any)[user.userIdentifier] || [];
+      const transactions = testTransactions[user.userIdentifier] || [];
       console.log(`🧪 Simulating ${transactions.length} test transactions...`);
 
       for (const tx of transactions) {

@@ -1,6 +1,10 @@
+/**
+ * @deprecated This route uses old in-memory storage system.
+ * TODO: Delete this file - replaced by MongoDB RecurringPayment model
+ */
 import { NextResponse } from 'next/server';
 import { simulateTransaction, getCustomerRules } from '@/lib/visa/vctcClient';
-import { getPaymentById } from '@/lib/storage';
+import { getPaymentById } from '@/lib/old/storage';
 
 /**
  * POST /api/test/simulate-transaction

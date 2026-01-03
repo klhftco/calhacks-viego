@@ -1,3 +1,7 @@
+/**
+ * @deprecated This route uses old in-memory storage system.
+ * TODO: Delete this file - replaced by MongoDB RecurringPayment model
+ */
 import { NextResponse } from 'next/server';
 import {
   createPayment,
@@ -7,7 +11,7 @@ import {
   createReminder,
   calculateNextDueDate,
   type AutomatedPayment,
-} from '@/lib/storage';
+} from '@/lib/old/storage';
 import { createPaymentMonitoringRule, deleteCustomerRules } from '@/lib/visa/vctcClient';
 
 /**

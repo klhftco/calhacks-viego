@@ -1,4 +1,4 @@
-import { makeVisaApiCall } from './visa/visaBaseClient';
+import { makeVisaApiCall } from './visaBaseClient';
 import {
   AccountNotificationsInquiryRequest,
   AccountNotificationsInquiryResponse,

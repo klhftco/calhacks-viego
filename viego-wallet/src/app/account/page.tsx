@@ -17,7 +17,7 @@ import {
   RefreshCw,
   Save,
 } from "lucide-react";
-import { AlertPreference, NotificationDetail } from "@/types/visaAlerts";
+import { AlertPreference, NotificationDetail } from "@/lib/visa/types";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 const ALERT_TYPES = [

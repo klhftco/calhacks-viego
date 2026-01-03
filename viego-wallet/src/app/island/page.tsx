@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { useIsland } from "@/context/IslandContext";
+import { useIsland } from "@/contexts/IslandContext";
 import { Egg, Sparkles, Trophy, TrendingUp, Star, Plus } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 

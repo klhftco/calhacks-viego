@@ -16,8 +16,8 @@
  *   npx tsx scripts/seed.ts --if-empty
  */
 
-import { seedDatabase, seedIfEmpty } from '../lib/mongo/seed/seedDatabase';
-import { seedVisaAPI } from '../lib/mongo/seed/seedVisa';
+import { seedDatabase, seedIfEmpty } from '@/lib/mongo/seed/seedDatabase';
+import { seedVisaAPI } from '@/lib/mongo/seed/seedVisa';
 
 export { seedDatabase, seedIfEmpty, seedVisaAPI };
 

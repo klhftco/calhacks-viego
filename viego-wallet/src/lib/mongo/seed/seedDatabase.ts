@@ -12,8 +12,8 @@
 import { connectToDatabase } from '../connection';
 import { User } from '../models/User';
 import { RecurringPayment } from '../models/RecurringPayment';
-import demoUsers from './demo-users.json';
-import recurringPayments from './recurring-payments.json';
+import demoUsersData from './demo-users.json';
+import recurringPaymentsData from './recurring-payments.json';
 
 export interface SeedResult {
   success: boolean;
@@ -21,6 +21,38 @@ export interface SeedResult {
   payments: number;
   errors: string[];
 }
+
+interface DemoUser {
+  viegoUID: string;
+  userIdentifier: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  xp?: number;
+  schoolName?: string;
+  accountStatus?: 'active' | 'inactive' | 'suspended';
+  preferences?: {
+    notifications?: boolean;
+    budgetAlerts?: boolean;
+  };
+}
+
+interface RecurringPaymentData {
+  userId: string;
+  type: string;
+  merchantName: string;
+  merchantCategoryCode?: string;
+  amount: number;
+  frequency: string;
+  dueDay?: number;
+  dueDate?: string;
+  reminderDays: number[];
+  status?: string;
+  nextDueDate: string;
+}
+
+const demoUsers = demoUsersData as DemoUser[];
+const recurringPayments = recurringPaymentsData as RecurringPaymentData[];
 
 /**
  * Seed MongoDB with demo data
@@ -50,7 +82,7 @@ export async function seedDatabase(): Promise<SeedResult> {
     // Create users
     for (const userData of demoUsers) {
       try {
-        const user = await User.create({
+        const user = new User({
           viegoUID: userData.viegoUID,
           visaUserIdentifier: userData.userIdentifier,
           email: userData.email,
@@ -67,6 +99,7 @@ export async function seedDatabase(): Promise<SeedResult> {
           badges: [],
           monsters: [],
         });
+        await user.save();
 
         console.log(`✅ Created user: ${user.firstName} ${user.lastName} (${user.email})`);
         result.users++;
@@ -81,7 +114,7 @@ export async function seedDatabase(): Promise<SeedResult> {
     // Create recurring payments
     for (const paymentData of recurringPayments) {
       try {
-        const payment = await RecurringPayment.create({
+        const payment = new RecurringPayment({
           userId: paymentData.userId,
           type: paymentData.type,
           merchantName: paymentData.merchantName,
@@ -94,6 +127,7 @@ export async function seedDatabase(): Promise<SeedResult> {
           status: paymentData.status || 'active',
           nextDueDate: new Date(paymentData.nextDueDate),
         });
+        await payment.save();
 
         console.log(`✅ Created payment: ${payment.merchantName} ($${payment.amount}) for ${payment.userId}`);
         result.payments++;

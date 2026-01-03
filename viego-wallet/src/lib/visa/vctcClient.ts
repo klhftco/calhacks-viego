@@ -29,10 +29,20 @@ export interface CustomerProfile {
 }
 
 export interface CreateProfileRequest {
-  email: string;
+  email?: string;
   firstName: string;
   lastName: string;
   phoneNumber?: string;
+  userIdentifier?: string;
+  preferredLanguage?: string;
+  countryCode?: string;
+  defaultAlertsPreferences?: Array<{
+    contactType: 'Email' | 'SMS' | 'Push';
+    contactValue: string;
+    preferredEmailFormat?: string;
+    callingCode?: string;
+    status: string;
+  }>;
 }
 
 export interface VisaCreateProfileResponse {
@@ -137,30 +147,36 @@ export async function createCustomerProfile(
   // Generate our internal Viego UID
   const viegoUID = generateViegoUID();
 
-  // Generate userIdentifier as UUID (required by Visa API)
-  const visaUserIdentifier = randomUUID();
+  // Use provided userIdentifier or generate a new UUID
+  const visaUserIdentifier = profileData.userIdentifier || randomUUID();
+
+  // Build defaultAlertsPreferences from provided data or email/phone
+  let defaultAlertsPreferences = profileData.defaultAlertsPreferences;
+  if (!defaultAlertsPreferences && profileData.email) {
+    defaultAlertsPreferences = [
+      {
+        contactType: 'Email' as const,
+        contactValue: profileData.email,
+        preferredEmailFormat: 'Html',
+        status: 'Active',
+      },
+      ...(profileData.phoneNumber ? [{
+        contactType: 'SMS' as const,
+        contactValue: profileData.phoneNumber.replace(/[^0-9]/g, ''),
+        callingCode: '1',
+        status: 'Active',
+      }] : []),
+    ];
+  }
 
   const createPayload = {
     firstName: profileData.firstName,
     lastName: profileData.lastName,
     userIdentifier: visaUserIdentifier,
     isProfileActive: true,
-    preferredLanguage: 'en-us',
-    countryCode: 'USA',
-    defaultAlertsPreferences: [
-      {
-        contactType: 'Email',
-        contactValue: profileData.email,
-        preferredEmailFormat: 'Html',
-        status: 'Active',
-      },
-      ...(profileData.phoneNumber ? [{
-        contactType: 'SMS',
-        contactValue: profileData.phoneNumber.replace(/[^0-9]/g, ''), // Remove formatting
-        callingCode: '1',
-        status: 'Active',
-      }] : []),
-    ],
+    preferredLanguage: profileData.preferredLanguage || 'en-us',
+    countryCode: profileData.countryCode || 'USA',
+    defaultAlertsPreferences: defaultAlertsPreferences || [],
   };
 
   try {
@@ -212,10 +228,10 @@ export async function createCustomerProfile(
  * Returns 404 if profile doesn't exist
  */
 export async function getCustomerProfile(userIdentifier: string) {
-  return makeVisaApiCall(
-    'GET',
-    `/vctc/customerrules/v1/consumertransactioncontrols/customer/${encodeURIComponent(userIdentifier)}`
-  );
+  return makeVisaApiCall({
+    method: 'GET',
+    endpoint: `/vctc/customerrules/v1/consumertransactioncontrols/customer/${encodeURIComponent(userIdentifier)}`,
+  });
 }
 
 /**
