@@ -1,0 +1,54 @@
+{
+  "bailey-student-001": {
+    "merchantControls": [
+      {
+        "type": "ALCOHOL",
+        "controlType": "MCT_ALCOHOL",
+        "isControlEnabled": true,
+        "shouldDeclineAll": true
+      },
+      {
+        "type": "GAMBLING",
+        "controlType": "MCT_GAMBLING",
+        "isControlEnabled": true,
+        "shouldDeclineAll": true
+      },
+      {
+        "type": "GROCERY",
+        "controlType": "MCT_GROCERY",
+        "isControlEnabled": true,
+        "shouldDeclineAll": false,
+        "alertThreshold": 150,
+        "declineThreshold": 200
+      }
+    ]
+  },
+  "oliver-student-002": {
+    "merchantControls": [
+      {
+        "type": "ADULT_ENTERTAINMENT",
+        "controlType": "MCT_ADULT_ENTERTAINMENT",
+        "isControlEnabled": true,
+        "shouldDeclineAll": false,
+        "alertThreshold": 50,
+        "declineThreshold": 100
+      },
+      {
+        "type": "ELECTRONICS",
+        "controlType": "MCT_ELECTRONICS",
+        "isControlEnabled": true,
+        "shouldDeclineAll": false,
+        "alertThreshold": 100,
+        "declineThreshold": 150
+      },
+      {
+        "type": "APPAREL",
+        "controlType": "MCT_APPAREL",
+        "isControlEnabled": true,
+        "shouldDeclineAll": false,
+        "alertThreshold": 75,
+        "declineThreshold": 125
+      }
+    ]
+  }
+}

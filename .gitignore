@@ -1,3 +1,5 @@
 *.secret
 .env*
 .claude/
+*.crt
+*.pem

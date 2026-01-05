@@ -27,9 +27,11 @@
    NEXT_PUBLIC_API_URL=https://your-app.vercel.app
    ```
 
-3. **Initialize Demo Data** (one-time):
+3. **Initialize Demo Data** (run locally before deployment):
    ```bash
-   curl -X POST https://your-app.vercel.app/api/demo/init
+   npm run seed
+   # Or seed only if database is empty:
+   npm run seed:if-empty
    ```
 
 4. **Test the App**:
@@ -69,7 +71,7 @@ cp .env.example .env.local
 npm run dev
 
 # Initialize demo data locally
-npx tsx scripts/setup-demo-users.ts
+npm run seed
 ```
 
 ### 📋 Key Features
@@ -89,9 +91,9 @@ npx tsx scripts/setup-demo-users.ts
 - Verify Next.js version compatibility
 
 **Demo data not loading?**
-- Run `/api/demo/init` endpoint
+- Run `npm run seed` locally to initialize database
 - Check Vercel function logs
-- Verify Visa API credentials
+- Verify Visa API credentials and MongoDB connection
 
 **Authentication issues?**
 - Clear browser localStorage

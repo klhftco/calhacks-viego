@@ -1,0 +1,20 @@
+{
+  "bailey-student-001": [
+    { "amount": 45.0, "merchantName": "Whole Foods", "merchantCategoryCode": "5411" },
+    { "amount": 62.50, "merchantName": "Safeway", "merchantCategoryCode": "5411" },
+    { "amount": 89.99, "merchantName": "Costco", "merchantCategoryCode": "5411" },
+    { "amount": 28.0, "merchantName": "Trader Joes", "merchantCategoryCode": "5411" },
+    { "amount": 42.0, "merchantName": "Target Groceries", "merchantCategoryCode": "5411" },
+    { "amount": 25.0, "merchantName": "Liquor Store", "merchantCategoryCode": "5921" },
+    { "amount": 35.0, "merchantName": "Wine Shop", "merchantCategoryCode": "5921" },
+    { "amount": 50.0, "merchantName": "Casino Royale", "merchantCategoryCode": "7995" }
+  ],
+  "oliver-student-002": [
+    { "amount": 35.0, "merchantName": "Best Buy", "merchantCategoryCode": "5732" },
+    { "amount": 45.0, "merchantName": "Apple Store", "merchantCategoryCode": "5732" },
+    { "amount": 85.0, "merchantName": "Nordstrom", "merchantCategoryCode": "5651" },
+    { "amount": 60.0, "merchantName": "GameStop Electronics", "merchantCategoryCode": "5732" },
+    { "amount": 50.0, "merchantName": "Zara", "merchantCategoryCode": "5651" },
+    { "amount": 15.99, "merchantName": "H&M", "merchantCategoryCode": "5651" }
+  ]
+}
