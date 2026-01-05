@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Plus, Calendar, DollarSign, CheckCircle, Clock, AlertCircle } from "lucide-react";
-import ProtectedRoute from "@/components/ProtectedRoute";
 
 interface AutomatedPayment {
   id: string;
@@ -99,8 +98,7 @@ export default function PaymentsPage() {
   }
 
   return (
-    <ProtectedRoute>
-      <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
@@ -258,6 +256,5 @@ export default function PaymentsPage() {
         </div>
       )}
     </div>
-    </ProtectedRoute>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { DollarSign, TrendingUp, TrendingDown, Bell, Calendar, CreditCard, ShoppingBag, Coffee, Bus, Home, RefreshCw } from "lucide-react";
+import { DollarSign, TrendingUp, TrendingDown, Bell, Calendar, CreditCard, ShoppingBag, Coffee, Bus, Home, RefreshCw, Gift, Tag, CheckCircle, Clock, Star, Percent } from "lucide-react";
 import DonutChart from "@/components/DonutChart";
 
 type User = {
@@ -82,7 +82,7 @@ export default function BudgetPage() {
 
   // Get logged-in user from localStorage
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "simulate" | "limits">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "simulate" | "limits" | "savings">("overview");
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(false);
   const [availableControls, setAvailableControls] = useState<string[]>([]);
@@ -90,12 +90,27 @@ export default function BudgetPage() {
   // Load user from localStorage on mount
   useEffect(() => {
     const savedUser = localStorage.getItem("viego_user");
-    const demoUserID = localStorage.getItem("demo_user");
 
-    if (savedUser && demoUserID) {
-      const user = USERS.find(u => u.userIdentifier === demoUserID);
-      if (user) {
-        setSelectedUser(user);
+    if (savedUser) {
+      try {
+        const parsedUser = JSON.parse(savedUser);
+        // Try to find demo user data, otherwise use parsed user data
+        const demoUser = USERS.find(u => u.userIdentifier === parsedUser.viegoUID);
+        if (demoUser) {
+          setSelectedUser(demoUser);
+        } else {
+          // Use the user data from localStorage (for non-demo users)
+          setSelectedUser({
+            userIdentifier: parsedUser.viegoUID,
+            firstName: parsedUser.firstName,
+            lastName: parsedUser.lastName,
+            pan: parsedUser.pan || "",
+            email: parsedUser.email,
+            description: "Viego user"
+          });
+        }
+      } catch (e) {
+        console.error("Failed to parse user data:", e);
       }
     }
   }, []);
@@ -269,7 +284,7 @@ export default function BudgetPage() {
         {!selectedUser && (
           <div className="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-6 mb-6 text-center">
             <p className="text-yellow-800 font-semibold">
-              Please <a href="/login" className="underline text-blue-600">login</a> to view your budget dashboard
+              Please <a href="/account" className="underline text-blue-600">login</a> to view your budget dashboard
             </p>
           </div>
         )}
@@ -372,6 +387,16 @@ export default function BudgetPage() {
                 }`}
               >
                 🎯 Manage Limits
+              </button>
+              <button
+                onClick={() => setActiveTab("savings")}
+                className={`flex-1 px-6 py-4 font-semibold transition-all ${
+                  activeTab === "savings"
+                    ? "border-b-4 border-blue-500 text-blue-600 bg-blue-50"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                }`}
+              >
+                💰 Savings & Offers
               </button>
             </div>
           </div>
@@ -801,6 +826,205 @@ export default function BudgetPage() {
                       <span><strong>Card Support:</strong> You can only set limits for categories your specific card supports</span>
                     </li>
                   </ul>
+                </div>
+              </div>
+            )}
+
+            {/* Savings & Offers Tab */}
+            {activeTab === "savings" && (
+              <div className="space-y-6">
+                {/* Savings Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="bg-gradient-to-br from-green-400 to-emerald-500 rounded-2xl p-6 shadow-lg text-white">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-lg font-semibold">This Month</h3>
+                      <TrendingUp size={24} />
+                    </div>
+                    <p className="text-4xl font-bold">${totalBlocked.toFixed(2)}</p>
+                    <p className="text-white/90 text-sm mt-2">blocked & saved</p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-blue-400 to-teal-500 rounded-2xl p-6 shadow-lg text-white">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-lg font-semibold">Protected</h3>
+                      <Star size={24} />
+                    </div>
+                    <p className="text-4xl font-bold">{blockedTransactions.length}</p>
+                    <p className="text-white/90 text-sm mt-2">impulse buys blocked</p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-purple-400 to-pink-500 rounded-2xl p-6 shadow-lg text-white">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-lg font-semibold">Smart Limits</h3>
+                      <Gift size={24} />
+                    </div>
+                    <p className="text-4xl font-bold">{budgetLimits.length}</p>
+                    <p className="text-white/90 text-sm mt-2">active controls</p>
+                  </div>
+                </div>
+
+                {/* Auto-Apply Banner */}
+                <div className="bg-gradient-to-r from-blue-500 to-green-500 rounded-2xl p-6 text-white shadow-lg">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-white/20 rounded-full p-3 mt-1">
+                      <CheckCircle size={24} />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold mb-2">Smart Protection is Active</h3>
+                      <p className="text-white/90 text-lg">
+                        Your budget controls automatically block overspending and protect you from impulse purchases.
+                        No manual intervention needed!
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Protected Transactions - Show recently blocked */}
+                {blockedTransactions.length > 0 && (
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                      <Clock className="text-blue-600" />
+                      Recently Protected
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {blockedTransactions.slice(0, 6).map((tx, idx) => (
+                        <div
+                          key={idx}
+                          className="bg-white rounded-2xl p-5 shadow-lg border-2 border-red-200 hover:shadow-xl transition-all"
+                        >
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+                                  BLOCKED
+                                </span>
+                                <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                  <DollarSign size={12} />
+                                  Saved ${tx.amount.toFixed(2)}
+                                </span>
+                              </div>
+                              <h3 className="text-xl font-bold text-gray-900 mb-1">{tx.merchantName}</h3>
+                              <p className="text-sm text-gray-600">{tx.controlType}</p>
+                            </div>
+                          </div>
+                          <div className="pt-3 border-t border-gray-100">
+                            <span className="text-sm text-gray-600">
+                              {new Date(tx.timestamp).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Active Budget Controls */}
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <Tag className="text-blue-600" />
+                    Active Budget Controls
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {budgetLimits.map((limit) => {
+                      const percentage = limit.declineThreshold > 0
+                        ? Math.min((limit.currentSpend / limit.declineThreshold) * 100, 100)
+                        : 0;
+                      const isBlocked = limit.declineThreshold === 0;
+                      const usagePercentage = percentage;
+
+                      return (
+                        <div
+                          key={limit.controlType}
+                          className={`bg-white rounded-2xl p-6 shadow-lg border-2 hover:shadow-xl transition-all ${
+                            isBlocked ? 'border-red-200' : 'border-gray-100'
+                          }`}
+                        >
+                          {/* Control Type Badge */}
+                          <div className={`${isBlocked ? 'bg-red-500' : 'bg-blue-500'} text-white text-center py-3 px-4 rounded-xl mb-4 shadow-md`}>
+                            <div className="flex items-center justify-center gap-2">
+                              <Percent size={24} />
+                              <span className="text-xl font-bold">
+                                {isBlocked ? 'BLOCKED' : `${usagePercentage.toFixed(0)}% Used`}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Control Details */}
+                          <h3 className="text-xl font-bold text-gray-900 mb-2">{limit.controlType}</h3>
+                          <p className="text-gray-700 mb-4 text-sm">
+                            {isBlocked
+                              ? 'All transactions in this category are automatically blocked'
+                              : `Spending: $${limit.currentSpend.toFixed(2)} / $${limit.declineThreshold.toFixed(2)}`
+                            }
+                          </p>
+
+                          {/* Usage Progress */}
+                          {!isBlocked && (
+                            <div className="mb-3">
+                              <div className="flex justify-between text-xs text-gray-600 mb-1">
+                                <span>Alert: ${limit.alertThreshold}</span>
+                                <span>Limit: ${limit.declineThreshold}</span>
+                              </div>
+                              <div className="bg-gray-200 rounded-full h-2 overflow-hidden">
+                                <div
+                                  className={`h-full rounded-full transition-all ${
+                                    usagePercentage >= 100 ? 'bg-red-500' : usagePercentage >= 75 ? 'bg-yellow-500' : 'bg-green-500'
+                                  }`}
+                                  style={{ width: `${usagePercentage}%` }}
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Status */}
+                          <div className="pt-3 border-t border-gray-100">
+                            <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                              isBlocked ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+                            }`}>
+                              {isBlocked ? '🛡️ Protected' : '✓ Active'}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* How It Works Section */}
+                <div className="bg-blue-50 rounded-2xl p-8 border-2 border-blue-200">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                    <Gift className="text-blue-500" />
+                    How Budget Protection Saves You Money
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="text-center">
+                      <div className="bg-blue-500 text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
+                        1
+                      </div>
+                      <h3 className="font-bold text-gray-900 mb-2">Set Your Limits</h3>
+                      <p className="text-gray-600 text-sm">
+                        Define spending limits for different categories based on your budget
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <div className="bg-blue-500 text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
+                        2
+                      </div>
+                      <h3 className="font-bold text-gray-900 mb-2">Auto-Protection</h3>
+                      <p className="text-gray-600 text-sm">
+                        Transactions are automatically approved or blocked based on your rules
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <div className="bg-blue-500 text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
+                        3
+                      </div>
+                      <h3 className="font-bold text-gray-900 mb-2">Save Money</h3>
+                      <p className="text-gray-600 text-sm">
+                        Watch your savings grow as you avoid overspending and impulse buys!
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}

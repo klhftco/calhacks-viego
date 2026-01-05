@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Navigation from "@/components/Navigation";
 import { IslandProvider } from "@/contexts/IslandContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 
@@ -23,10 +22,7 @@ export default function RootLayout({
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-green-50">
           <AuthProvider>
             <IslandProvider>
-              <Navigation />
-              <main className="pb-20">
-                {children}
-              </main>
+              {children}
             </IslandProvider>
           </AuthProvider>
         </div>

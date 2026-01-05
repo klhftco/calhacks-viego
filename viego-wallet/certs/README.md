@@ -1,77 +1,68 @@
-VDP Mutual TLS (certs-v3)
+# Visa Developer Platform Certificates
 
-**What This Is**
-- mTLS materials for Visa Developer Platform (VDP) sandbox.
-- Used by `scripts/vdp-helloworld.js` to call `https://sandbox.api.visa.com/vdp/helloworld` with 2‑way SSL and Basic Auth.
+## What Certs Should Exist
 
-**Contents**
-- `vdp_client_cert.pem` — Client certificate issued by VDP for your project - next to each two-way SSL key.
-- `vdp_client_key.pem` — Private key that pairs with the client cert - during CSR generation.
-- `vdp_intermediate_cert.pem` — Visa intermediate CA that signs your client cert - underneath two-way SSL section.
-- `vdp_root_cert.pem` — Visa root CA for the client cert chain - underneath two-way SSL section.
-- `DigiCertGlobalRootCA.pem` — Public root used to verify `sandbox.api.visa.com` (server side trust).
-  - Generated from `DigiCertGlobalRootCA.crt` via https://developer.visa.com/pages/working-with-visa-apis/two-way-ssl
-- `.env` — Holds `VISA_USER_ID` and `VISA_USER_PASSWORD` used for Basic Auth - underneath each two-way SSL key.
+This directory contains 5 certificate files for Visa API two-way SSL:
 
-**Quick Start**
-- Place your `vdp_client_cert.pem` and `vdp_client_key.pem` in this folder.
-- Create `.env` in this folder with:
-  - `VISA_USER_ID=...`
-  - `VISA_USER_PASSWORD=...`
-- From repo root, run the Node test:
-  - `node scripts/vdp-helloworld.js`
-- Expected: `Status: 200` and a small JSON body.
+```
+DigiCertGlobalRootCA.pem
+vdp_client_cert.pem
+vdp_client_key.pem
+vdp_intermediate_cert.pem
+vdp_root_cert.pem
+```
 
-**How It Works**
-- Client authentication: Node `https.Agent` loads `vdp_client_cert.pem` and `vdp_client_key.pem` for mutual TLS.
-- Server authentication: OS trust store is used; if needed, the script also tries `DigiCertGlobalRootCA.pem` in this folder.
-- Authorization: Adds `Authorization: Basic <base64(VISA_USER_ID:VISA_USER_PASSWORD)>` header.
-
-**Troubleshooting**
-- 401 Unauthorized
-  - Check `.env` values and that the project credentials are enabled for mTLS.
-- TLS trust errors (e.g., UNABLE_TO_VERIFY_LEAF_SIGNATURE)
-  - Ensure `DigiCertGlobalRootCA.pem` exists here; the Node script will include it.
-  - Verify system clock and that you are hitting `sandbox.api.visa.com`.
-- Handshake failures / bad certificate
-  - Confirm the cert/key pair matches: run the OpenSSL check below.
-  - Make sure you are using the sandbox client cert for the sandbox endpoint.
-- Cert/key mismatch check (OpenSSL)
-  - `openssl x509 -noout -modulus -in vdp_client_cert.pem | openssl md5`
-  - `openssl rsa  -noout -modulus -in vdp_client_key.pem  | openssl md5`
-  - Hashes must match.
-
-**Notes and Options**
-- The Visa client CA files (`vdp_root_cert.pem`, `vdp_intermediate_cert.pem`) are for your client cert chain, not for verifying the Visa server certificate.
-- If your private key is passphrase‑protected, update the script to include a `passphrase` in the HTTPS agent.
-- To enforce Visa’s minimum TLS version explicitly, add `minVersion: 'TLSv1.2'` to the HTTPS agent in `scripts/vdp-helloworld.js`.
-- If your password contains non‑ASCII characters, Base64‑encode using UTF‑8.
-
-**Security**
-- Keep `vdp_client_key.pem` private and out of version control.
-- Rotate/revoke the cert/key in VDP immediately if exposed.
-
-# Certificate Files Directory
-
-Place your Visa Sandbox certificate files here.
-
-## Required Files
-
-Download these from your Visa Developer Dashboard:
-
-1. **visa_private_key.pem** - Your private key for two-way SSL authentication
-2. **visa_cert.pem** - Your SSL certificate (if separate from private key)
-3. **visa_message_private_key.pem** - Private key for message encryption/signing
-
-## How to Get These Files
+## How to Get Them
 
 1. Log in to [Visa Developer Portal](https://developer.visa.com/)
 2. Go to your project dashboard
-3. Navigate to **Credentials → Certificates**
+3. Navigate to **Credentials → Two-Way SSL**
 4. Download the certificate bundle or generate new certificates
 5. Place the `.pem` files in this directory
 
-## Security Note
+## What Each Is Used For
 
-All files in this directory are automatically ignored by git (see .gitignore).
-Never commit certificate files to version control.
+| File | Purpose |
+|------|---------|
+| `vdp_client_cert.pem` | Client certificate - proves your identity to Visa API |
+| `vdp_client_key.pem` | Private key - pairs with client cert for authentication |
+| `vdp_root_cert.pem` | Visa root CA - validates your client cert chain |
+| `vdp_intermediate_cert.pem` | Visa intermediate CA - validates your client cert chain |
+| `DigiCertGlobalRootCA.pem` | DigiCert root CA - verifies Visa's server certificate |
+
+## How Two-Way SSL Works
+
+**Client → Server Authentication:**
+- Node.js loads `vdp_client_cert.pem` + `vdp_client_key.pem`
+- Visa verifies your cert against their CA chain
+- Proves you are an authorized developer
+
+**Server → Client Authentication:**
+- Visa presents their SSL certificate
+- Your app verifies it using `DigiCertGlobalRootCA.pem`
+- Proves you're talking to the real Visa API
+
+Both sides authenticate = two-way SSL (mTLS)
+
+## Minimal Testing
+
+Run the test script from repo root:
+```bash
+node viego-wallet/certs/test/vdp-helloworld.js
+```
+
+Expected output: `Status: 200` with JSON response body.
+
+**Troubleshooting:**
+- `401 Unauthorized` → Check credentials in `.env.local`
+- `UNABLE_TO_VERIFY_LEAF_SIGNATURE` → Missing `DigiCertGlobalRootCA.pem`
+- Handshake failures → Verify cert/key pair match:
+  ```bash
+  openssl x509 -noout -modulus -in vdp_client_cert.pem | openssl md5
+  openssl rsa  -noout -modulus -in vdp_client_key.pem  | openssl md5
+  # Hashes must match
+  ```
+
+## Security
+
+All files in this directory are gitignored. Never commit certificates to version control.

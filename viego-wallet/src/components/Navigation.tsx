@@ -2,29 +2,49 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Egg, TrendingUp, MapPin, Gift, Users, UserCircle, Calendar } from "lucide-react";
+import { TrendingUp, MapPin, Egg, Calendar, Users, UserCircle } from "lucide-react";
 
 export default function Navigation() {
   const pathname = usePathname();
 
-  // Exactly 5 buttons in order: Island, Budget, Home, Map, Friends
+  // Navigation order: Budget, Map, Island, Payments, Friends
   const navItems = [
-    { href: "/island", icon: Egg, label: "Island" },
     { href: "/budget", icon: TrendingUp, label: "Budget" },
-    // { href: "/", icon: Home, label: "Home" },
-    { href: "/payments", icon: Calendar, label: "Payments" },
     { href: "/map", icon: MapPin, label: "Map" },
+    { href: "/island", icon: Egg, label: "Island" },
+    { href: "/payments", icon: Calendar, label: "Payments" },
     { href: "/friends", icon: Users, label: "Friends" },
   ];
 
   const isAccountActive = pathname === "/account";
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 md:static md:border-b md:border-t-0">
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center py-3 md:py-4">
-          {/* Main Navigation Items */}
-          <div className="flex justify-around items-center flex-1">
+    <>
+      {/* Top Account Bar */}
+      <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 shadow-sm z-50">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-between items-center py-3">
+            <div className="text-xl font-bold text-gray-900">Viego Wallet</div>
+            <Link
+              href="/account"
+              className={`flex flex-row items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                isAccountActive
+                  ? "text-blue-600 bg-blue-50"
+                  : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"
+              }`}
+              title="Account Settings"
+            >
+              <UserCircle size={24} />
+              <span className="text-sm font-medium hidden md:inline">Account</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-around items-center py-3">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
@@ -45,22 +65,8 @@ export default function Navigation() {
               );
             })}
           </div>
-
-          {/* Account Icon - Top Right */}
-          <Link
-            href="/account"
-            className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all ml-2 ${
-              isAccountActive
-                ? "text-blue-600 bg-blue-50"
-                : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"
-            }`}
-            title="Account Settings"
-          >
-            <UserCircle size={24} />
-            <span className="text-xs font-medium">Account</span>
-          </Link>
         </div>
-      </div>
-    </nav>
+      </nav>
+    </>
   );
 }

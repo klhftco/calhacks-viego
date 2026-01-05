@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useIsland } from "@/contexts/IslandContext";
 import { Egg, Sparkles, Trophy, TrendingUp, Star, Plus } from "lucide-react";
-import ProtectedRoute from "@/components/ProtectedRoute";
 
 interface Monster {
   id: number;
@@ -92,8 +91,7 @@ export default function IslandPage() {
   }, [monsters]);
 
   return (
-    <ProtectedRoute>
-      <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-900 mb-2">My Island</h1>
@@ -291,6 +289,5 @@ export default function IslandPage() {
         </div>
       </div>
     </div>
-    </ProtectedRoute>
   );
 }

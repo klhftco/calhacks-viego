@@ -18,7 +18,6 @@ import {
   Save,
 } from "lucide-react";
 import { AlertPreference, NotificationDetail } from "@/lib/visa/types";
-import ProtectedRoute from "@/components/ProtectedRoute";
 
 const ALERT_TYPES = [
   "DECLINE_ALL",
@@ -80,7 +79,6 @@ export default function AccountPage() {
   const [viegoUID, setViegoUID] = useState("");
   const [loginUID, setLoginUID] = useState("");
   const [loginError, setLoginError] = useState("");
-  const [mode, setMode] = useState<"create" | "retrieve" | "settings">("settings");
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [budgetAlertsEnabled, setBudgetAlertsEnabled] = useState(true);
   const [basicSettingsSaving, setBasicSettingsSaving] = useState(false);
@@ -478,9 +476,7 @@ export default function AccountPage() {
    * Handle logout
    */
   const handleLogout = () => {
-    logout();
-    localStorage.removeItem("viego_user");
-    localStorage.removeItem("demo_user");
+    logout(); // This handles removing both localStorage items
     router.push("/login");
   };
 
@@ -528,174 +524,24 @@ export default function AccountPage() {
     }
   };
 
-  // If not logged in, show login form
-  if (!user) {
+  // User should always be logged in since this page is protected
+  // Wait for auth to finish loading before checking
+  if (authLoading) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-md">
-        <div className="bg-white rounded-2xl shadow-lg p-8">
-          <div className="text-center mb-6">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Login to Viego</h1>
-            <p className="text-gray-600">Enter your Viego UID to access your account</p>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Viego UID
-              </label>
-              <input
-                type="text"
-                required
-                value={loginUID}
-                onChange={(e) => setLoginUID(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none font-mono text-gray-900"
-                placeholder="your-viego-id"
-              />
-            </div>
-
-            {loginError && (
-              <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4">
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="text-red-600" size={20} />
-                  <span className="font-semibold text-red-700">{loginError}</span>
-                </div>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={authLoading}
-              className="w-full bg-blue-500 text-white py-4 rounded-xl font-semibold hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {authLoading ? (
-                <>
-                  <Loader className="animate-spin" size={20} />
-                  Logging in...
-                </>
-              ) : (
-                <>
-                  <LogIn size={20} />
-                  Login
-                </>
-              )}
-            </button>
-          </form>
-
-          <div className="mt-6 p-4 bg-blue-50 rounded-xl">
-            <p className="text-sm text-gray-700 text-center">
-              <strong>Don&apos;t have an account?</strong>
-              <br />
-              Scroll down to create a new account with your custom Viego UID
-            </p>
-          </div>
-        </div>
-
-        {/* Create Account Section */}
-        <div className="mt-8 bg-white rounded-2xl shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Create New Account</h2>
-          <form onSubmit={handleCreateAccount} className="space-y-6">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Custom Viego UID (Optional)
-              </label>
-              <input
-                type="text"
-                value={formData.customViegoUID}
-                onChange={(e) => setFormData({ ...formData, customViegoUID: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none text-gray-900 font-mono"
-                placeholder="my-custom-id (leave blank for auto-generated)"
-              />
-              <p className="text-xs text-gray-500 mt-1">Choose your own unique ID, or leave blank for auto-generation</p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Email Address
-              </label>
-              <input
-                type="email"
-                required
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none text-gray-900"
-                placeholder="student@berkeley.edu"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  First Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.firstName}
-                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none text-gray-900"
-                  placeholder="John"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.lastName}
-                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none text-gray-900"
-                  placeholder="Doe"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Phone Number (Optional)
-              </label>
-              <input
-                type="tel"
-                value={formData.phoneNumber}
-                onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none text-gray-900"
-                placeholder="+1 (555) 123-4567"
-              />
-            </div>
-
-            {error && (
-              <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4">
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="text-red-600" size={20} />
-                  <span className="font-semibold text-red-700">{error}</span>
-                </div>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-500 text-white py-4 rounded-xl font-semibold hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <Loader className="animate-spin" size={20} />
-                  Creating Account...
-                </>
-              ) : (
-                <>
-                  <UserPlus size={20} />
-                  Create Account
-                </>
-              )}
-            </button>
-          </form>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <Loader className="animate-spin mx-auto mb-4 text-blue-600" size={48} />
+          <p className="text-gray-600">Loading...</p>
         </div>
       </div>
     );
   }
+
+  if (!user) {
+    router.push("/login");
+    return null;
+  }
+
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -714,42 +560,6 @@ export default function AccountPage() {
         </button>
       </div>
 
-      {/* Mode Toggle */}
-      <div className="flex gap-4 mb-8">
-        <button
-          onClick={() => setMode("create")}
-          className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all ${
-            mode === "create"
-              ? "bg-blue-500 text-white shadow-lg"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          }`}
-        >
-          <UserPlus className="inline mr-2" size={20} />
-          Create Account
-        </button>
-        <button
-          onClick={() => setMode("retrieve")}
-          className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all ${
-            mode === "retrieve"
-              ? "bg-blue-500 text-white shadow-lg"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          }`}
-        >
-          <User className="inline mr-2" size={20} />
-          Retrieve Account
-        </button>
-        <button
-          onClick={() => setMode("settings")}
-          className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all ${
-            mode === "settings"
-              ? "bg-blue-500 text-white shadow-lg"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          }`}
-        >
-          <User className="inline mr-2" size={20} />
-          Settings
-        </button>
-      </div>
 
       {/* Error Display */}
       {error && (
@@ -803,175 +613,10 @@ export default function AccountPage() {
       )}
 
       {/* Create Account Form */}
-      {mode === "create" && (
-        <div className="bg-white rounded-2xl shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Create New Account</h2>
-          <form onSubmit={handleCreateAccount} className="space-y-6">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Custom Viego UID (Optional)
-              </label>
-              <input
-                type="text"
-                value={formData.customViegoUID}
-                onChange={(e) => setFormData({ ...formData, customViegoUID: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none text-gray-900 font-mono"
-                placeholder="my-custom-id (leave blank for auto-generated)"
-              />
-              <p className="text-xs text-gray-500 mt-1">Choose your own unique ID, or leave blank for auto-generation</p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Email Address
-              </label>
-              <input
-                type="email"
-                required
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none text-gray-900"
-                placeholder="student@berkeley.edu"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  First Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.firstName}
-                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none text-gray-900"
-                  placeholder="John"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.lastName}
-                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none text-gray-900"
-                  placeholder="Doe"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Phone Number (Optional)
-              </label>
-              <input
-                type="tel"
-                value={formData.phoneNumber}
-                onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none text-gray-900"
-                placeholder="+1 (555) 123-4567"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-500 text-white py-4 rounded-xl font-semibold hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <Loader className="animate-spin" size={20} />
-                  Creating Account...
-                </>
-              ) : (
-                <>
-                  <UserPlus size={20} />
-                  Create Account
-                </>
-              )}
-            </button>
-          </form>
-
-          <div className="mt-6 p-4 bg-green-50 rounded-xl border-2 border-green-200">
-            <p className="text-sm text-gray-700">
-              <strong>✅ MongoDB Integration Active:</strong>
-              <br />
-              1. Account is saved to MongoDB database
-              <br />
-              2. Data persists permanently across server restarts
-              <br />
-              3. All user data, XP, badges, and monsters are stored securely
-              <br />
-              4. Financial data remains in Visa API (not stored in database)
-              <br />
-              <br />
-              <strong className="text-green-700">Save your Viego UID to retrieve your account later!</strong>
-            </p>
-          </div>
-        </div>
-      )}
 
       {/* Retrieve Account Form */}
-      {mode === "retrieve" && (
-        <div className="bg-white rounded-2xl shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Retrieve Existing Account</h2>
-          <form onSubmit={handleRetrieveAccount} className="space-y-6">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Viego UID
-              </label>
-              <input
-                type="text"
-                required
-                value={viegoUID}
-                onChange={(e) => setViegoUID(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none font-mono text-gray-900"
-                placeholder="Enter Viego UID (e.g., viego_1234567890_abc123)"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-500 text-white py-4 rounded-xl font-semibold hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <Loader className="animate-spin" size={20} />
-                  Retrieving Account...
-                </>
-              ) : (
-                <>
-                  <User size={20} />
-                  Retrieve Account
-                </>
-              )}
-            </button>
-          </form>
-
-          <div className="mt-6 p-4 bg-blue-50 rounded-xl">
-            <p className="text-sm text-gray-700">
-              <strong>How it works:</strong>
-              <br />
-              1. Use Viego UID to retrieve profile (from account creation)
-              <br />
-              2. System fetches account data from temporary storage
-              <br />
-              3. Displays profile information
-              <br />
-              4. ⚠️ Data is temporary until MongoDB is integrated
-            </p>
-          </div>
-        </div>
-      )}
 
       {/* Settings Form */}
-      {mode === "settings" && (
         <div className="bg-white rounded-2xl shadow-lg p-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Account Settings</h2>
 
@@ -1492,7 +1137,6 @@ export default function AccountPage() {
             </section>
           </div>
         </div>
-      )}
     </div>
   );
 }

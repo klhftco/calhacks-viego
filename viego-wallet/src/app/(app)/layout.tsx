@@ -3,17 +3,17 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import Navigation from "@/components/Navigation";
 
-export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
+export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
     const checkAuth = () => {
       const savedUser = localStorage.getItem("viego_user");
-      const demoUser = localStorage.getItem("demo_user");
 
-      if (!savedUser || !demoUser) {
+      if (!savedUser) {
         router.push("/login");
       } else {
         setIsChecking(false);
@@ -34,5 +34,13 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
     );
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <Navigation />
+      {/* Main content with padding to avoid overlay from fixed top bar (56px) and bottom navbar (72px) */}
+      <div className="pt-14 pb-20">
+        {children}
+      </div>
+    </>
+  );
 }

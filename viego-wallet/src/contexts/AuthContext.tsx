@@ -14,6 +14,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   login: (viegoUID: string) => Promise<void>;
+  setUserData: (userData: User) => void;
   logout: () => void;
   isLoading: boolean;
 }
@@ -68,13 +69,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const setUserData = (userData: User) => {
+    setUser(userData);
+    localStorage.setItem('viego_user', JSON.stringify(userData));
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem('viego_user');
+    localStorage.removeItem('demo_user');
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, login, setUserData, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
