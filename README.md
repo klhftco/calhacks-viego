@@ -2,14 +2,13 @@
   <img src="viego-wallet/public/assets/plesiosaur.png" alt="Save Dinos" width="200"/>
 </div>
 
-# Save Dinos: A Visa Wallet
-**CalHacks 2025 Submission**
+# Save Dinos: A Visa Wallet (CalHacks 2025 Submission)
 
 Save Dinos is a gamified Visa wallet for students that makes saving and financial education fun. Hit goals like skipping takeout or staying on budget to hatch and grow dinos on your island.
 
-## [Devpost](https://devpost.com/software/save-dinos-a-visa-wallet/)
+#### [Devpost](https://devpost.com/software/save-dinos-a-visa-wallet/)
 
-## [Try it out!](https://calhacks-viego.vercel.app/)
+#### [Try it out!](https://calhacks-viego.vercel.app/)
 
 ---
 
